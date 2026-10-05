@@ -1,0 +1,19 @@
+<div id="cookie-banner" role="dialog" aria-label="Preferenze cookie" style="position:fixed;bottom:0;left:0;right:0;background:var(--surface);color:var(--txt);padding:1.1rem;z-index:9999;display:none;border-top:1px solid var(--line)">
+  <div style="max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between">
+    <p style="margin:0;flex:1 1 300px;font-size:.92rem;line-height:1.5">Usiamo cookie tecnici necessari e, previo consenso, cookie statistici (Google Analytics). Vedi la <a href="/it/privacy-policy.html" style="color:var(--brand2);text-decoration:underline">Privacy</a> e la <a href="/it/cookie-policy.html" style="color:var(--brand2);text-decoration:underline">Cookie Policy</a>.</p>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button id="cb-reject" class="btn btn-ghost" style="padding:.6rem 1rem">Rifiuta</button>
+      <button id="cb-customize" class="btn btn-ghost" style="padding:.6rem 1rem">Personalizza</button>
+      <button id="cb-accept" class="btn btn-primary" style="padding:.6rem 1rem">Accetta tutti</button>
+    </div>
+  </div>
+</div>
+<div id="cookie-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:none;place-items:center;padding:1rem">
+  <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:1.6rem;max-width:440px;width:100%">
+    <h3 style="margin-top:0">Preferenze cookie</h3>
+    <label style="display:flex;gap:.7rem;align-items:flex-start;margin:1rem 0;color:var(--muted)"><input type="checkbox" checked disabled> <span><strong style="color:var(--txt)">Necessari</strong> — sempre attivi, essenziali al funzionamento.</span></label>
+    <label style="display:flex;gap:.7rem;align-items:flex-start;margin:1rem 0;color:var(--muted)"><input type="checkbox" id="cm-stat"> <span><strong style="color:var(--txt)">Statistici</strong> — Google Analytics (GA4) con IP anonimizzato.</span></label>
+    <label style="display:flex;gap:.7rem;align-items:flex-start;margin:1rem 0;color:var(--muted)"><input type="checkbox" id="cm-mkt"> <span><strong style="color:var(--txt)">Marketing</strong> — attualmente non utilizzati.</span></label>
+    <button id="cm-save" class="btn btn-primary" style="width:100%;margin-top:.5rem">Salva preferenze</button>
+  </div>
+</div>

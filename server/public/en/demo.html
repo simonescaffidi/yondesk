@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" data-ga4="{{GA4_ID}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live demo — Yondesk remote control in the browser</title>
+<meta name="description" content="Try Yondesk right in your browser: share your screen, control remotely, chat and transfer files between two devices, with nothing to install.">
+<link rel="canonical" href="{{SITE_URL}}/en/demo.html">
+<link rel="alternate" hreflang="it" href="{{SITE_URL}}/it/demo.html">
+<link rel="alternate" hreflang="en" href="{{SITE_URL}}/en/demo.html">
+<meta property="og:title" content="Yondesk live demo"><meta property="og:description" content="Remote control in the browser, no installs."><meta property="og:image" content="{{SITE_URL}}/img/og.png">
+<!--GSC-->
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!--#HEADER#-->
+<main id="main" class="container" style="padding-top:2rem">
+  <div class="section-head" style="margin-bottom:1.5rem"><p class="eyebrow">Live demo</p><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Try it in the browser</h1><p>Open this page on two devices (or two tabs). One acts as the <strong>assisted device</strong> and shows an ID and password, the other as the <strong>operator</strong> and connects. Powered by end-to-end encrypted WebRTC.</p></div>
+
+  <div class="notice" style="margin-bottom:1.5rem"><strong>Note.</strong> In the browser, control is for demonstration (live screen, operator cursor, chat, files, clipboard). Real mouse/keyboard control of the OS requires the <a href="/en/download.html" style="color:var(--brand2);text-decoration:underline">native app</a>, always with visible consent and a session banner.</div>
+
+  <div id="demo-root" class="demo-wrap">
+    <div class="panel">
+      <div class="role-tabs">
+        <button class="on" data-role="host">I need help</button>
+        <button data-role="viewer">I provide help</button>
+      </div>
+      <div id="pane-host">
+        <div class="field"><label>Your ID</label><div class="idbox" id="host-id">— — —</div></div>
+        <div class="field"><label>Session password</label><input id="host-pass" readonly></div>
+        <button id="btn-regen" class="btn btn-ghost" style="width:100%">Regenerate password</button>
+        <p style="color:var(--muted);font-size:.86rem;margin-top:1rem">Share your ID and password with your helper. You'll need to <strong>accept</strong> the request when it arrives.</p>
+      </div>
+      <div id="pane-viewer" style="display:none">
+        <div class="field"><label>Device ID</label><input id="conn-id" inputmode="numeric" placeholder="123 456 789"></div>
+        <div class="field"><label>Password</label><input id="conn-pass" placeholder="password"></div>
+        <button id="btn-connect" class="btn btn-primary" style="width:100%">Connect</button>
+      </div>
+      <div class="status" id="status"><span class="dot"></span><span>Waiting…</span></div>
+      <div class="chatbox" style="display:none" id="chatwrap">
+        <div class="chatlog" id="chatlog"></div>
+        <div class="chatin"><input id="chat-input" placeholder="Type a message…"><button id="chat-send">Send</button></div>
+      </div>
+    </div>
+    <div>
+      <div class="stage" id="stage">
+        <div class="session-banner" id="session-banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg><span>Session active</span></div>
+        <img class="remote-cursor" id="remote-cursor" src="/img/cursor.svg" alt="">
+        <div class="placeholder" id="stage-ph">The shared screen will appear here.</div>
+        <video id="stage-video" playsinline autoplay></video>
+      </div>
+      <div id="live" style="display:none">
+        <div class="toolbar">
+          <button id="btn-file">📎 Send file</button>
+          <button id="btn-clip">📋 Send clipboard</button>
+          <button id="btn-hangup" style="margin-left:auto;background:var(--danger);color:#fff">End</button>
+          <input type="file" id="file-input" hidden>
+        </div>
+      </div>
+      <div id="setup"></div>
+    </div>
+  </div>
+
+  <div class="consent" id="consent">
+    <div class="box">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--brand2)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div class="who" id="consent-who">An operator</div>
+      <p style="color:var(--muted)">wants to start a support session on your device. Allow it?</p>
+      <div class="row">
+        <button class="btn btn-ghost" id="c-deny">Deny</button>
+        <button class="btn btn-ghost" id="c-allow-view">View only</button>
+        <button class="btn btn-primary" id="c-allow-ctrl">Allow</button>
+      </div>
+    </div>
+  </div>
+</main>
+<!--#FOOTER#-->
+<!--#COOKIE#-->
+<script>window.__T={connected_server:"Connected to server",reconnecting:"Reconnecting…",waiting_accept:"Waiting for confirmation…",wrong_password:"Wrong password",rejected:"Request rejected",host_offline:"Device offline",too_many:"Too many attempts, try again later",err_self:"You can't connect to yourself",error:"Error",session_ended:"Session ended",in_session:"Session active",waiting:"Waiting…",idle:"Waiting…",an_operator:"An operator",operator:"Operator",share_denied:"Screen sharing cancelled",banner_sharing:"You are sharing your screen",connecting:"Connecting…",fill_fields:"Enter ID and password",peer_left:"The other user left",ph_host:"You are sharing your screen.",ph_viewer:"Remote screen incoming…",file_received:"File received"};</script>
+<script src="/js/yondesk.js"></script>
+<script src="/js/demo.js"></script>
+<script src="/js/site.js"></script>
+</body>
+</html>

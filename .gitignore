@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
+.env
+server/data/
+# Flutter (cartelle generate in CI con flutter create)
+mobile/android/
+mobile/ios/
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins*
+mobile/pubspec.lock

@@ -1,0 +1,38 @@
+{
+  "name": "yondesk-agent",
+  "version": "1.0.0",
+  "description": "Yondesk agent desktop (Windows, macOS, Linux)",
+  "main": "src/main.js",
+  "author": "www.simonescaffidi.it",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never",
+    "dist:win": "electron-builder --win --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:linux": "electron-builder --linux --publish never"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "ws": "^8.18.0"
+  },
+  "optionalDependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.0"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "it.simonescaffidi.yondesk",
+    "productName": "Yondesk",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["src/**/*", "package.json"],
+    "asarUnpack": ["**/node_modules/@nut-tree-fork/**"],
+    "win": { "target": ["nsis"], "artifactName": "Yondesk-Setup-${version}.${ext}" },
+    "mac": { "target": ["dmg"], "category": "public.app-category.utilities", "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist", "entitlementsInherit": "build/entitlements.mac.plist" },
+    "linux": { "target": ["AppImage", "deb"], "category": "Utility", "maintainer": "www.simonescaffidi.it" }
+  }
+}

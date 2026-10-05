@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src *; img-src 'self' data:; style-src 'self' 'unsafe-inline'">
+<title>Yondesk</title>
+<style>
+  :root{--bg:#0b1020;--surface:#151d35;--line:#26304f;--txt:#eef2ff;--muted:#9fb0d6;--brand:#3b82f6;--brand2:#22d3ee;--ok:#34d399;--danger:#f87171}
+  *{box-sizing:border-box;font-family:system-ui,sans-serif}
+  body{margin:0;background:var(--bg);color:var(--txt);padding:1.2rem}
+  h1{font-size:1.2rem;display:flex;align-items:center;gap:.5rem;margin:.2rem 0 1rem}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem;margin-bottom:1rem}
+  label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:.3rem}
+  .id{font:800 1.8rem/1 ui-monospace,monospace;color:var(--brand2);letter-spacing:.05em;text-align:center;padding:.6rem;background:#05070f;border-radius:10px;user-select:all}
+  input{width:100%;padding:.6rem;border-radius:8px;border:1px solid var(--line);background:#05070f;color:var(--txt);font:600 1.1rem ui-monospace,monospace}
+  button{padding:.55rem .9rem;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--txt);cursor:pointer;font-weight:600}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#06121f}
+  button.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .row{display:flex;gap:.5rem;align-items:center}
+  .status{display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--muted);margin-top:.6rem}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+  .status.on .dot{background:var(--ok)}
+  .switch{display:flex;align-items:center;gap:.6rem;font-size:.9rem}
+  .muted{color:var(--muted);font-size:.82rem}
+  dialog{background:var(--surface);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:1.4rem;max-width:320px}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  .consent-row{display:flex;gap:.5rem;margin-top:1rem}
+  .consent-row button{flex:1}
+</style>
+</head>
+<body>
+<h1><img src="../assets/icon.svg" width="24" height="24"> Yondesk</h1>
+
+<div class="card">
+  <label>Il tuo ID</label>
+  <div class="id" id="id">— — —</div>
+  <div style="height:.8rem"></div>
+  <label>Password sessione</label>
+  <div class="row"><input id="pass" readonly><button id="regen" title="Rigenera">↻</button></div>
+  <div class="status" id="status"><span class="dot"></span><span>Avvio…</span></div>
+</div>
+
+<div class="card">
+  <label>Accesso non presidiato</label>
+  <div class="switch"><input type="checkbox" id="unatt" style="width:auto"><span>Consenti l'accesso senza conferma</span></div>
+  <div id="unatt-box" style="display:none;margin-top:.7rem">
+    <input id="unatt-pass" type="password" placeholder="Password non presidiato">
+    <p class="muted">Con questa opzione un operatore che conosce ID e questa password può collegarsi senza che tu accetti. Resta sempre un banner visibile durante la sessione.</p>
+  </div>
+</div>
+
+<button class="danger" id="stop" style="width:100%;display:none">Termina sessione</button>
+
+<dialog id="consent">
+  <h3 style="margin-top:0">Richiesta di assistenza</h3>
+  <p><strong id="who" style="color:var(--brand2)"></strong> vuole collegarsi al tuo computer.</p>
+  <div class="consent-row">
+    <button id="c-deny">Rifiuta</button>
+    <button id="c-view">Solo visione</button>
+    <button class="primary" id="c-ctrl">Consenti controllo</button>
+  </div>
+</dialog>
+
+<script src="./yondesk.js"></script>
+<script src="./agent.js"></script>
+</body>
+</html>

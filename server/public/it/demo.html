@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="it" data-ga4="{{GA4_ID}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo live — Yondesk controllo remoto nel browser</title>
+<meta name="description" content="Prova Yondesk direttamente nel browser: condividi lo schermo, controlla da remoto, chatta e trasferisci file tra due dispositivi, senza installare nulla.">
+<link rel="canonical" href="{{SITE_URL}}/it/demo.html">
+<link rel="alternate" hreflang="it" href="{{SITE_URL}}/it/demo.html">
+<link rel="alternate" hreflang="en" href="{{SITE_URL}}/en/demo.html">
+<meta property="og:title" content="Demo live Yondesk"><meta property="og:description" content="Controllo remoto nel browser, senza installazioni."><meta property="og:image" content="{{SITE_URL}}/img/og.png">
+<!--GSC-->
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!--#HEADER#-->
+<main id="main" class="container" style="padding-top:2rem">
+  <div class="section-head" style="margin-bottom:1.5rem">
+    <p class="eyebrow">Demo live</p>
+    <h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Provala nel browser</h1>
+    <p>Apri questa pagina su due dispositivi (o due schede). Uno fa da <strong>dispositivo assistito</strong> e mostra ID e password, l'altro da <strong>operatore</strong> e si connette. Funziona con WebRTC cifrato end-to-end.</p>
+  </div>
+
+  <div class="notice" style="margin-bottom:1.5rem"><strong>Nota.</strong> Nel browser il controllo è dimostrativo (schermo in diretta, cursore dell'operatore, chat, file, appunti). Il controllo reale di mouse e tastiera del sistema operativo richiede l'<a href="/it/download.html" style="color:var(--brand2);text-decoration:underline">app nativa</a>, sempre con consenso e banner di sessione visibili.</div>
+
+  <div id="demo-root" class="demo-wrap">
+    <div class="panel">
+      <div class="role-tabs">
+        <button class="on" data-role="host">Mi fanno assistenza</button>
+        <button data-role="viewer">Offro assistenza</button>
+      </div>
+
+      <div id="pane-host">
+        <div class="field"><label>Il tuo ID</label><div class="idbox" id="host-id">— — —</div></div>
+        <div class="field"><label>Password sessione</label><input id="host-pass" readonly></div>
+        <button id="btn-regen" class="btn btn-ghost" style="width:100%">Rigenera password</button>
+        <p style="color:var(--muted);font-size:.86rem;margin-top:1rem">Comunica ID e password a chi ti assiste. Dovrai <strong>accettare</strong> la richiesta quando arriva.</p>
+      </div>
+
+      <div id="pane-viewer" style="display:none">
+        <div class="field"><label>ID del dispositivo</label><input id="conn-id" inputmode="numeric" placeholder="123 456 789"></div>
+        <div class="field"><label>Password</label><input id="conn-pass" placeholder="password"></div>
+        <button id="btn-connect" class="btn btn-primary" style="width:100%">Connetti</button>
+      </div>
+
+      <div class="status" id="status"><span class="dot"></span><span>In attesa…</span></div>
+
+      <div class="chatbox" style="display:none" id="chatwrap">
+        <div class="chatlog" id="chatlog"></div>
+        <div class="chatin"><input id="chat-input" placeholder="Scrivi un messaggio…"><button id="chat-send">Invia</button></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stage" id="stage">
+        <div class="session-banner" id="session-banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg><span>Sessione attiva</span></div>
+        <img class="remote-cursor" id="remote-cursor" src="/img/cursor.svg" alt="">
+        <div class="placeholder" id="stage-ph">Lo schermo condiviso apparirà qui.</div>
+        <video id="stage-video" playsinline autoplay></video>
+      </div>
+      <div id="live" style="display:none">
+        <div class="toolbar">
+          <button id="btn-file">📎 Invia file</button>
+          <button id="btn-clip">📋 Invia appunti</button>
+          <button id="btn-hangup" style="margin-left:auto;background:var(--danger);color:#fff">Termina</button>
+          <input type="file" id="file-input" hidden>
+        </div>
+      </div>
+      <div id="setup"></div>
+    </div>
+  </div>
+
+  <!-- Richiesta di consenso (lato assistito) -->
+  <div class="consent" id="consent">
+    <div class="box">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--brand2)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div class="who" id="consent-who">Un operatore</div>
+      <p style="color:var(--muted)">vuole avviare una sessione di assistenza sul tuo dispositivo. Vuoi consentire?</p>
+      <div class="row">
+        <button class="btn btn-ghost" id="c-deny">Rifiuta</button>
+        <button class="btn btn-ghost" id="c-allow-view">Solo visione</button>
+        <button class="btn btn-primary" id="c-allow-ctrl">Consenti</button>
+      </div>
+    </div>
+  </div>
+</main>
+<!--#FOOTER#-->
+<!--#COOKIE#-->
+<script>window.__T={connected_server:"Connesso al server",reconnecting:"Riconnessione…",waiting_accept:"In attesa di conferma…",wrong_password:"Password errata",rejected:"Richiesta rifiutata",host_offline:"Dispositivo non in linea",too_many:"Troppi tentativi, riprova più tardi",err_self:"Non puoi connetterti a te stesso",error:"Errore",session_ended:"Sessione terminata",in_session:"Sessione attiva",waiting:"In attesa…",idle:"In attesa…",an_operator:"Un operatore",operator:"Operatore",share_denied:"Condivisione schermo annullata",banner_sharing:"Stai condividendo lo schermo",connecting:"Connessione…",fill_fields:"Inserisci ID e password",peer_left:"L'altro utente ha chiuso",ph_host:"Stai condividendo il tuo schermo.",ph_viewer:"Schermo remoto in arrivo…",file_received:"File ricevuto"};</script>
+<script src="/js/yondesk.js"></script>
+<script src="/js/demo.js"></script>
+<script src="/js/site.js"></script>
+</body>
+</html>
