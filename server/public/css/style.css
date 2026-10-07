@@ -161,10 +161,10 @@ footer.site{border-top:1px solid var(--line);background:var(--bg2);padding:3rem 
 footer.site h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.8rem}
 footer.site a{display:block;color:var(--muted);padding:.2rem 0;font-size:.93rem}
 footer.site a:hover{color:var(--txt)}
-.foot-legal{border-top:1px solid var(--line);margin-top:2rem;padding-top:1.3rem;color:var(--muted);font-size:.84rem;text-align:center}
-.foot-bottom{margin-top:1rem;padding-top:1rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;color:var(--muted);font-size:.88rem}
-.foot-powered{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.foot-logo{height:34px;width:auto;opacity:.92}
-.powered-by{margin:0}
+.foot-legal{border-top:1px solid var(--line);margin-top:2rem;padding-top:1.3rem;color:var(--muted);font-size:.88rem;text-align:left}
+.foot-legal p{margin:.15rem 0}
+.foot-banner{margin-top:1.6rem;padding-top:.4rem;display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center}
+.foot-logo{height:48px;width:auto;opacity:.95}
+.powered-by{margin:0;font-size:1rem}
 .powered-by a{display:inline;color:var(--brand2);text-decoration:underline}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
