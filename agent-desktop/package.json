@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "Yondesk agent desktop (Windows, macOS, Linux)",
   "main": "src/main.js",
-  "author": "www.simonescaffidi.it",
+  "author": "Simone Scaffidi Domianello <info@simonescaffidi.it>",
+  "homepage": "https://www.simonescaffidi.it",
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
     "start": "electron .",
+    "rebuild-native": "electron-rebuild -f -o @nut-tree-fork/nut-js",
     "dist": "electron-builder --publish never",
     "dist:win": "electron-builder --win --publish never",
     "dist:mac": "electron-builder --mac --publish never",
@@ -21,12 +23,14 @@
     "@nut-tree-fork/nut-js": "^4.2.0"
   },
   "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
     "electron": "^31.7.7",
     "electron-builder": "^24.13.3"
   },
   "build": {
     "appId": "it.simonescaffidi.yondesk",
     "productName": "Yondesk",
+    "npmRebuild": false,
     "directories": { "output": "dist", "buildResources": "build" },
     "files": ["src/**/*", "package.json"],
     "asarUnpack": ["**/node_modules/@nut-tree-fork/**"],
