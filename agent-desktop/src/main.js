@@ -16,6 +16,7 @@ let Store; try { Store = require('electron-store'); } catch { Store = null; }
 const store = Store ? new Store({ name: 'yondesk' }) : { get: () => undefined, set: () => {} };
 
 let win, banner, tray;
+const viewers = new Set(); // finestre operatore aperte
 let controlEnabled = false; // abilitato dal renderer quando la sessione è attiva in modalità control
 
 // --- input injection opzionale (degrada a sola visione se non disponibile) ---
@@ -46,6 +47,23 @@ function createBanner() {
   banner.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   banner.loadFile(path.join(__dirname, 'renderer', 'banner.html'));
 }
+
+// Finestra operatore (viewer): mostra lo schermo remoto e invia input
+function createViewer(target) {
+  const v = new BrowserWindow({
+    width: 1100, height: 720, title: 'Yondesk — Sessione remota',
+    backgroundColor: '#05070f',
+    icon: path.join(__dirname, 'assets', 'icon.png'),
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+  });
+  v.setMenuBarVisibility(false);
+  v.loadFile(path.join(__dirname, 'renderer', 'viewer.html'));
+  v.webContents.once('did-finish-load', () => v.webContents.send('viewer-target', target));
+  v.on('closed', () => viewers.delete(v));
+  viewers.add(v);
+  return v;
+}
+ipcMain.handle('open-viewer', (e, target) => { createViewer(target); return true; });
 
 function setTray() {
   const img = nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png'));
@@ -106,7 +124,8 @@ ipcMain.on('input', async (e, ev) => {
     if (ev.t === 'move') await mouse.setPosition(new Point(Math.round(ev.x * disp.width), Math.round(ev.y * disp.height)));
     else if (ev.t === 'down') await mouse.pressButton(ev.b === 2 ? Button.RIGHT : ev.b === 1 ? Button.MIDDLE : Button.LEFT);
     else if (ev.t === 'up') await mouse.releaseButton(ev.b === 2 ? Button.RIGHT : ev.b === 1 ? Button.MIDDLE : Button.LEFT);
-    else if (ev.t === 'scroll') { if (ev.dy) await mouse.scrollDown(Math.abs(ev.dy)); }
+    else if (ev.t === 'scroll') { if (ev.dy > 0) await mouse.scrollDown(Math.abs(ev.dy)); else if (ev.dy < 0) await mouse.scrollUp(Math.abs(ev.dy)); }
+    else if (ev.t === 'dblclick') { await mouse.leftClick(); await mouse.leftClick(); }
     else if (ev.t === 'key' && ev.key) { const K = Key[ev.key]; if (K != null) { ev.down ? await keyboard.pressKey(K) : await keyboard.releaseKey(K); } }
     else if (ev.t === 'text' && ev.text) await keyboard.type(ev.text);
   } catch (err) { console.error('[input]', err.message); }

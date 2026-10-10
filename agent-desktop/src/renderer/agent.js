@@ -122,6 +122,22 @@
     };
     window.agent.onToggleUnattended((v) => { $('#unatt').checked = v; $('#unatt').onchange({ target: { checked: v } }); });
     window.agent.onForceStop(() => { if (peer) sig.send({ type: 'hangup', sessionId: peer.sessionId }); endSession(); });
+
+    // Tab ruolo
+    document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      $('#pane-host').style.display = t.dataset.pane === 'host' ? 'block' : 'none';
+      $('#pane-operator').style.display = t.dataset.pane === 'operator' ? 'block' : 'none';
+    });
+    // Operatore: apre la finestra viewer dedicata
+    $('#op-connect').onclick = () => {
+      const id = $('#op-id').value.replace(/\D/g, '');
+      const pass = $('#op-pass').value.trim();
+      if (id.length < 6 || !pass) { $('#op-connect').textContent = 'Inserisci ID e password'; setTimeout(() => $('#op-connect').textContent = 'Connetti', 1500); return; }
+      window.agent.openViewer({ id, pass, name: cfg ? cfg.name : 'Operatore' });
+    };
+
     boot();
   });
 })();

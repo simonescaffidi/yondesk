@@ -11,5 +11,8 @@ contextBridge.exposeInMainWorld('agent', {
   forceStop: () => ipcRenderer.send('force-stop'),
   onToggleUnattended: (cb) => ipcRenderer.on('toggle-unattended', (e, v) => cb(v)),
   onForceStop: (cb) => ipcRenderer.on('force-stop', () => cb()),
-  onSessionInfo: (cb) => ipcRenderer.on('session-info', (e, info) => cb(info))
+  onSessionInfo: (cb) => ipcRenderer.on('session-info', (e, info) => cb(info)),
+  // operatore / finestra viewer
+  openViewer: (target) => ipcRenderer.invoke('open-viewer', target),
+  onViewerTarget: (cb) => ipcRenderer.on('viewer-target', (e, t) => cb(t))
 });

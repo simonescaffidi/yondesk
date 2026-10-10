@@ -26,11 +26,33 @@
   dialog::backdrop{background:rgba(0,0,0,.6)}
   .consent-row{display:flex;gap:.5rem;margin-top:1rem}
   .consent-row button{flex:1}
+  .tabs{display:flex;gap:.3rem;background:#05070f;border:1px solid var(--line);border-radius:10px;padding:.3rem;margin-bottom:1rem}
+  .tab{flex:1;border:none;background:transparent;color:var(--muted);font-weight:600;padding:.5rem;border-radius:7px;cursor:pointer}
+  .tab.on{background:var(--brand);color:#06121f}
 </style>
 </head>
 <body>
 <h1><img src="../assets/icon.svg" width="24" height="24"> Yondesk</h1>
 
+<div class="tabs">
+  <button class="tab on" data-pane="host">Fatti assistere</button>
+  <button class="tab" data-pane="operator">Offri assistenza</button>
+</div>
+
+<div id="pane-operator" style="display:none">
+  <div class="card">
+    <label>ID del dispositivo remoto</label>
+    <input id="op-id" inputmode="numeric" placeholder="123 456 789">
+    <div style="height:.7rem"></div>
+    <label>Password</label>
+    <input id="op-pass" type="password" placeholder="password">
+    <div style="height:.9rem"></div>
+    <button class="primary" id="op-connect" style="width:100%">Connetti</button>
+    <p class="muted" style="margin-top:.7rem">Si aprirà una finestra con lo schermo remoto. Il controllo parte solo se l'altro utente lo consente.</p>
+  </div>
+</div>
+
+<div id="pane-host">
 <div class="card">
   <label>Il tuo ID</label>
   <div class="id" id="id">— — —</div>
@@ -50,6 +72,7 @@
 </div>
 
 <button class="danger" id="stop" style="width:100%;display:none">Termina sessione</button>
+</div><!-- /pane-host -->
 
 <dialog id="consent">
   <h3 style="margin-top:0">Richiesta di assistenza</h3>
