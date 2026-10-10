@@ -1,6 +1,6 @@
 {
   "name": "yondesk-agent",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Yondesk agent desktop (Windows, macOS, Linux)",
   "main": "src/main.js",
   "author": "Simone Scaffidi Domianello <info@simonescaffidi.it>",
@@ -37,7 +37,7 @@
     "files": ["src/**/*", "package.json"],
     "asarUnpack": ["**/node_modules/@nut-tree-fork/**"],
     "win": { "target": ["nsis"], "artifactName": "Yondesk-Setup-${version}.${ext}" },
-    "mac": { "target": ["dmg"], "category": "public.app-category.utilities", "hardenedRuntime": true,
+    "mac": { "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }], "category": "public.app-category.utilities", "hardenedRuntime": true,
       "entitlements": "build/entitlements.mac.plist", "entitlementsInherit": "build/entitlements.mac.plist" },
     "linux": { "target": ["AppImage", "deb"], "category": "Utility", "maintainer": "www.simonescaffidi.it" }
   }
