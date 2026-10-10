@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: 'temurin', java-version: '17' }
       - uses: subosito/flutter-action@v2
-        with: { channel: 'stable' }
+        with: { channel: 'stable', flutter-version: '3.24.5' }
       - name: Generate platform folders
         run: flutter create --platforms=android,ios .
       - name: Patch permissions
@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
-        with: { channel: 'stable' }
+        with: { channel: 'stable', flutter-version: '3.24.5' }
       - run: flutter create --platforms=ios .
       - run: bash tool/patch_platforms.sh
       - run: flutter pub get
