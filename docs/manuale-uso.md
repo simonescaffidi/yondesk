@@ -11,12 +11,19 @@ Yondesk collega chi ha bisogno di assistenza (**assistito**) con chi la fornisce
 5. Il browser chiede quale schermo/scheda condividere. Durante la sessione resta visibile un **banner** in alto.
 
 ## App desktop (controllo completo)
-L'app nativa abilita il controllo reale di mouse e tastiera, il multi-monitor e l'accesso non presidiato.
+L'app nativa (Windows, macOS, Linux) fa sia da **operatore** sia da **assistito**, abilita il controllo reale di mouse e tastiera, il multi-monitor e l'accesso non presidiato. macOS: `.dmg` per Apple Silicon (arm64) e Intel (x64).
 
+### Farsi assistere (assistito)
 1. Scarica l'app dalla pagina **Download** per il tuo sistema.
-2. All'avvio l'app mostra **ID** e **password sessione**.
+2. All'avvio, scheda **"Fatti assistere"**: l'app mostra **ID** e **password sessione**.
 3. Comunica ID e password all'operatore; quando arriva la richiesta, **accetta** (controllo o sola visione).
 4. Per terminare: pulsante **Termina** nell'app o **Termina** nel banner di sessione.
+
+### Offrire assistenza (operatore)
+1. Apri l'app, scheda **"Offri assistenza"**.
+2. Inserisci **ID** e **password** del dispositivo remoto e premi **Connetti**.
+3. Si apre una finestra con lo schermo remoto: muovi mouse, scrivi, usa scorciatoie (es. Ctrl+C), rotella e doppio click. Il controllo parte solo se l'altro utente lo consente.
+4. Pulsanti: **Appunti** (incolla i tuoi appunti sul PC remoto), schermo intero, **Termina**.
 
 ### Permessi di sistema
 - **macOS**: autorizza *Registrazione schermo* e *Accessibilità* in Impostazioni → Privacy e sicurezza.
