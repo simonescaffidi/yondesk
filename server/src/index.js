@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const express = require('express');
 const { attachSignaling, stats } = require('./signaling');
+const alerts = require('./alerts');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC = path.join(__dirname, '..', 'public');
@@ -40,6 +41,17 @@ app.get('/api/health', (req, res) => res.json({ ok: true, ...stats() }));
 app.get('/api/releases', (req, res) => {
   const repo = process.env.GITHUB_REPO || 'simonescaffidi/yondesk';
   res.json({ repo, latest: `https://github.com/${repo}/releases/latest` });
+});
+
+// Health check (200 se l'app risponde)
+app.get('/health', (req, res) => res.json({ ok: true, ...stats() }));
+
+// Test alert (protetto da token) per verificare l'invio email
+app.get('/api/alert-test', (req, res) => {
+  const token = process.env.ALERT_TEST_TOKEN;
+  if (!token || req.query.token !== token) return res.status(403).json({ error: 'forbidden' });
+  alerts.sendAlert('test', 'Test manuale alert Yondesk', new Error('test').stack);
+  res.json({ ok: true, configured: alerts.configured() });
 });
 
 // Iniezione partial (header/footer/cookie) + GA4 / Search Console nelle pagine HTML
@@ -95,6 +107,9 @@ app.use((req, res, next) => {
 app.use(express.static(PUBLIC, { maxAge: '1h', extensions: ['html'] }));
 
 app.use((req, res) => res.status(404).type('html').send(renderHtml(path.join(PUBLIC, 'it', '404.html'))));
+
+// Alert email su errori (handler globali + middleware 5xx, registrato per ultimo)
+alerts.install(app);
 
 const server = http.createServer(app);
 attachSignaling(server);
