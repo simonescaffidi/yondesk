@@ -9,6 +9,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
+    "test": "node --test test/*.test.js",
     "rebuild-native": "electron-rebuild -f -o @nut-tree-fork/nut-js",
     "dist": "electron-builder --config electron-builder.config.js --publish never",
     "dist:win": "electron-builder --config electron-builder.config.js --win --publish never",

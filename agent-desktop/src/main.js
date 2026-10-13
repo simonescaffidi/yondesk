@@ -11,6 +11,7 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, desktopCapturer, screen, dialog } = require('electron');
 const path = require('path');
 const crypto = require('crypto');
+const unattendedHash = require('./unattended-hash');
 let Store; try { Store = require('electron-store'); } catch { Store = null; }
 
 const store = Store ? new Store({ name: 'yondesk' }) : { get: () => undefined, set: () => {} };
@@ -104,6 +105,23 @@ ipcMain.handle('config-get', () => ({
   name: store.get('name') || require('os').hostname()
 }));
 ipcMain.handle('config-set', (e, patch) => { Object.entries(patch).forEach(([k, v]) => store.set(k, v)); ipcMain.emit('tray-refresh'); return true; });
+
+/* Password accesso non presidiato: hash scrypt con salt calcolato nel main process.
+ * Il vecchio formato (SHA-256 senza salt) viene verificato e risalvato nel nuovo alla prima verifica riuscita. */
+ipcMain.handle('unattended-set', (e, password) => {
+  store.set('unattended', { enabled: true, hash: unattendedHash.hashPassword(String(password || '')) });
+  ipcMain.emit('tray-refresh');
+  return true;
+});
+ipcMain.handle('unattended-verify', (e, password) => {
+  const u = store.get('unattended');
+  if (!u || !u.enabled || !u.hash) return false;
+  const ok = unattendedHash.verifyPassword(String(password || ''), u.hash);
+  if (ok && unattendedHash.needsRehash(u.hash)) {
+    store.set('unattended', { ...u, hash: unattendedHash.hashPassword(String(password)) });
+  }
+  return ok;
+});
 
 function ensureDeviceKey() {
   let k = store.get('deviceKey');

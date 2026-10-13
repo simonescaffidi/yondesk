@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('agent', {
   listSources: () => ipcRenderer.invoke('list-sources'),
   getConfig: () => ipcRenderer.invoke('config-get'),
   setConfig: (patch) => ipcRenderer.invoke('config-set', patch),
+  setUnattendedPassword: (password) => ipcRenderer.invoke('unattended-set', password),
+  verifyUnattended: (password) => ipcRenderer.invoke('unattended-verify', password),
   sessionStart: (info) => ipcRenderer.send('session-start', info),
   sessionEnd: () => ipcRenderer.send('session-end'),
   sendInput: (ev) => ipcRenderer.send('input', ev),

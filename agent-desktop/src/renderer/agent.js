@@ -46,8 +46,7 @@
     let ok = TA.safeEqual(m.password, sessionPass);
     let auto = false;
     if (!ok && $('#unatt').checked && cfg.unattended && cfg.unattended.hash) {
-      const h = await sha256(m.password);
-      if (TA.safeEqual(h, cfg.unattended.hash)) { ok = true; auto = true; }
+      if (await window.agent.verifyUnattended(m.password)) { ok = true; auto = true; }
     }
     if (!ok) { sig.send({ type: 'reject', sessionId: m.sessionId, reason: 'auth' }); return; }
 
@@ -100,11 +99,6 @@
     sessionPass = TA.genPassword(); $('#pass').value = sessionPass; register();
   }
 
-  async function sha256(text) {
-    const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-    return Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, '0')).join('');
-  }
-
   document.addEventListener('DOMContentLoaded', () => {
     bindConsent();
     $('#regen').onclick = () => { sessionPass = TA.genPassword(); $('#pass').value = sessionPass; };
@@ -116,7 +110,7 @@
     $('#unatt-pass').onchange = async (e) => {
       const v = e.target.value.trim();
       if (v.length < 6) return;
-      await window.agent.setConfig({ unattended: { enabled: true, hash: await sha256(v) } });
+      await window.agent.setUnattendedPassword(v);
       cfg = await window.agent.getConfig();
       e.target.value = ''; register();
     };
