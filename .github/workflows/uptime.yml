@@ -1,0 +1,31 @@
+# Monitor esterno: ogni 30 min controlla /health. Se KO invia mail via Brevo a info@simonescaffidi.it (secret BREVO_API_KEY) e fallisce il job.
+name: Monitor disponibilita
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+jobs:
+  controllo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BASE: https://yondesk-production.up.railway.app
+      SLUG: yondesk
+    steps:
+      - name: Controllo /health
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/health" || echo 000)
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          echo "CODE=$code" >> $GITHUB_ENV
+          exit 1
+      - name: Mail di alert
+        if: failure()
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+        run: |
+          [ -z "$BREVO_API_KEY" ] && { echo "::error::BREVO_API_KEY assente"; exit 1; }
+          curl -s -X POST https://api.brevo.com/v3/smtp/email -H "api-key: $BREVO_API_KEY" -H 'Content-Type: application/json' \
+            -d "{\"sender\":{\"email\":\"info@simonescaffidi.it\",\"name\":\"Monitor\"},\"to\":[{\"email\":\"info@simonescaffidi.it\"}],\"subject\":\"[ALERT] $SLUG – sito giù\",\"textContent\":\"$BASE/health risponde ${CODE:-000}. Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}"
