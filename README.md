@@ -49,7 +49,7 @@ cd mobile && flutter create . && flutter pub get && flutter run
 
 ## Deploy
 
-- **Server**: Railway collegato a questo repo, auto-deploy da push su `main` (vedi `railway.json`).
+- **Server**: Railway collegato a questo repo, auto-deploy da push su `main`, build con `server/Dockerfile` (impostazioni del servizio su Railway; nel repo non c'è `railway.json`). Healthcheck: `GET /health`.
 - **Agent desktop**: build firmate via GitHub Actions su tag `v*` (`.github/workflows/desktop-build.yml`) → GitHub Releases.
 - **App mobile**: APK/iOS via GitHub Actions su tag `v*` (`.github/workflows/mobile-build.yml`).
 
@@ -64,6 +64,11 @@ cd mobile && flutter create . && flutter pub get && flutter run
 | `STUN_URLS` | STUN separati da virgola |
 | `TURN_URLS`, `TURN_USERNAME`, `TURN_CREDENTIAL` | TURN per NAT restrittivi |
 | `GITHUB_REPO` | repo per i link alle release |
+| `REDIRECT_HOSTS` | domini alias reindirizzati 301 al dominio di `SITE_URL` |
+| `BREVO_API_KEY`, `MAIL_FROM_EMAIL`, `MAIL_FROM_NAME` | invio email (alert) via API Brevo |
+| `ALERT_EMAIL` | destinatario alert errori (default info@simonescaffidi.it) |
+| `ALERT_TEST_TOKEN` | token per `GET /api/alert-test?token=...` |
+| `SMTP_*` | solo fallback temporaneo se `BREVO_API_KEY` manca (da rimuovere) |
 
 ## Roadmap
 
