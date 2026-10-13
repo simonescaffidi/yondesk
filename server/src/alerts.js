@@ -3,38 +3,22 @@
  * Alert via email su errori (regola fissa: destinatario info@simonescaffidi.it).
  * Invia mail su: crash (uncaughtException/unhandledRejection) e risposte 5xx Express.
  * Anti-spam: max 1 mail per tipo di errore ogni 30 minuti.
- * SMTP via variabili d'ambiente. Se mancano, logga un warning (non invia) — NON va omesso in silenzio.
+ * Invio tramite src/mailer.js: API Brevo (BREVO_API_KEY), fallback temporaneo SMTP se Brevo non è configurato.
+ * Se nessun canale è configurato logga un warning (non invia) — NON va omesso in silenzio.
  */
-let nodemailer = null;
-try { nodemailer = require('nodemailer'); } catch { /* dipendenza assente */ }
+const mailer = require('./mailer');
 
 const SLUG = 'yondesk';
 const ALERT_EMAIL = process.env.ALERT_EMAIL || 'info@simonescaffidi.it';
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
-const SMTP_FROM = process.env.SMTP_FROM || (SMTP_USER ? `Yondesk Alert <${SMTP_USER}>` : 'alert@yondesk');
-const SMTP_SECURE = String(process.env.SMTP_SECURE || (SMTP_PORT === 465)).toLowerCase() === 'true';
-const RAILWAY_URL = process.env.RAILWAY_PROJECT_URL || 'https://railway.com/project/bcf1cc6a-6aa0-41cb-a4d1-bea62f08483a';
+const RAILWAY_URL = process.env.RAILWAY_PROJECT_URL ||
+  (process.env.RAILWAY_PROJECT_ID ? `https://railway.com/project/${process.env.RAILWAY_PROJECT_ID}` : '(n/d)');
 
 const WINDOW_MS = 30 * 60 * 1000;
 const lastSent = new Map(); // tipo -> timestamp
-let transporter = null;
 let warned = false;
 
 function configured() {
-  return !!(nodemailer && SMTP_HOST && SMTP_USER && SMTP_PASS);
-}
-
-function getTransport() {
-  if (transporter) return transporter;
-  if (!configured()) return null;
-  transporter = nodemailer.createTransport({
-    host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_SECURE,
-    auth: { user: SMTP_USER, pass: SMTP_PASS }
-  });
-  return transporter;
+  return !!mailer.canale();
 }
 
 function nowRome() {
@@ -49,7 +33,7 @@ function sendAlert(type, message, stack) {
   const key = String(type || 'generico');
   const now = Date.now();
   const prev = lastSent.get(key) || 0;
-  if (now - prev < WINDOW_MS) return; // anti-spam
+  if (now - prev < WINDOW_MS) return Promise.resolve({ inviata: false, motivo: 'anti-spam' }); // anti-spam
   lastSent.set(key, now);
 
   const subject = `[ALERT] ${SLUG} – ${key}`;
@@ -62,19 +46,17 @@ function sendAlert(type, message, stack) {
     `Stack:\n${(stack || '').split('\n').slice(0, 12).join('\n')}\n\n` +
     `Railway: ${RAILWAY_URL}\n`;
 
-  const t = getTransport();
-  if (!t) {
+  if (!configured()) {
     if (!warned) {
       warned = true;
-      console.error(`[alert] SMTP non configurato: impossibile inviare alert a ${ALERT_EMAIL}. ` +
-        `Imposta SMTP_HOST/SMTP_USER/SMTP_PASS (e nodemailer installato). Alert in attesa credenziali.`);
+      console.error(`[alert] mail non configurata: impossibile inviare alert a ${ALERT_EMAIL}. ` +
+        `Imposta BREVO_API_KEY (oppure, temporaneamente, SMTP_HOST/SMTP_USER/SMTP_PASS).`);
     }
     console.error(`[alert:NON INVIATO] ${subject}\n${body}`);
-    return;
+    return Promise.resolve({ inviata: false, motivo: 'mail non configurata' });
   }
-  t.sendMail({ from: SMTP_FROM, to: ALERT_EMAIL, subject, text: body })
-    .then(() => console.log(`[alert] inviato: ${subject}`))
-    .catch((e) => console.error(`[alert] invio fallito: ${e.message}`));
+  return mailer.invia({ to: ALERT_EMAIL, subject, text: body })
+    .then((r) => { if (r.inviata) console.log(`[alert] inviato (${r.canale}): ${subject}`); else console.error(`[alert] invio fallito: ${r.motivo}`); return r; });
 }
 
 /**
@@ -102,10 +84,10 @@ function install(app) {
   }
 
   if (!configured()) {
-    console.warn(`[alert] SMTP non configurato all'avvio: gli alert verso ${ALERT_EMAIL} ` +
-      `non partiranno finché non imposti SMTP_HOST/SMTP_USER/SMTP_PASS.`);
+    console.warn(`[alert] mail non configurata all'avvio: gli alert verso ${ALERT_EMAIL} ` +
+      `non partiranno finché non imposti BREVO_API_KEY.`);
   } else {
-    console.log(`[alert] attivo → ${ALERT_EMAIL}`);
+    console.log(`[alert] attivo → ${ALERT_EMAIL} (canale: ${mailer.canale()})`);
   }
 }
 
