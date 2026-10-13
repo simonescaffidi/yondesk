@@ -12,7 +12,17 @@ const SITE_URL = (process.env.SITE_URL || 'https://yondesk-production.up.railway
 const GA4_ID = process.env.GA4_ID || '';
 const GSC_VERIFICATION = process.env.GSC_VERIFICATION || '';
 
+// Dominio canonico (principale) e domini da reindirizzare con 301.
+// yondesk.net e le varianti www sono alias -> redirect verso yondesk.com.
+let CANONICAL_HOST = '';
+try { CANONICAL_HOST = new URL(SITE_URL).host.toLowerCase(); } catch (_) {}
+const REDIRECT_HOSTS = new Set(
+  (process.env.REDIRECT_HOSTS || 'yondesk.net,www.yondesk.net,www.yondesk.com')
+    .split(',').map(h => h.trim().toLowerCase()).filter(Boolean)
+);
+
 const app = express();
+app.set('trust proxy', true);
 app.disable('x-powered-by');
 
 app.use((req, res, next) => {
@@ -20,6 +30,15 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+// Redirect 301 degli alias (es. yondesk.net) verso il dominio canonico (yondesk.com)
+app.use((req, res, next) => {
+  const host = String(req.headers.host || '').toLowerCase().split(':')[0];
+  if (CANONICAL_HOST && host && host !== CANONICAL_HOST && REDIRECT_HOSTS.has(host)) {
+    return res.redirect(301, `https://${CANONICAL_HOST}${req.originalUrl}`);
+  }
   next();
 });
 
