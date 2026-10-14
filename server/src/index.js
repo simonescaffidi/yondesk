@@ -11,6 +11,8 @@ const PUBLIC = path.join(__dirname, '..', 'public');
 const SITE_URL = (process.env.SITE_URL || 'https://yondesk-production.up.railway.app').replace(/\/$/, '');
 const GA4_ID = process.env.GA4_ID || '';
 const GSC_VERIFICATION = process.env.GSC_VERIFICATION || '';
+// Versione asset per cache-busting: cambia ad ogni deploy, così CSS/JS si aggiornano subito
+const ASSET_VER = String(process.env.RAILWAY_DEPLOYMENT_ID || process.env.RAILWAY_GIT_COMMIT_SHA || Date.now()).slice(0, 12);
 
 // Dominio canonico (principale) e domini da reindirizzare con 301.
 // yondesk.net e le varianti www sono alias -> redirect verso yondesk.com.
@@ -93,6 +95,7 @@ function renderHtml(file) {
     .replace('<!--#COOKIE#-->', partial(lang, 'cookie'))
     .replace(/{{GA4_ID}}/g, GA4_ID)
     .replace(/{{SITE_URL}}/g, SITE_URL)
+    .replace(/(["'])(\/(?:css|js)\/[A-Za-z0-9._\-]+\.(?:css|js))\1/g, '$1$2?v=' + ASSET_VER + '$1')
     .replace('<!--GSC-->', GSC_VERIFICATION ? `<meta name="google-site-verification" content="${GSC_VERIFICATION}">` : '');
   if (process.env.NODE_ENV === 'production') htmlCache.set(file, html);
   return html;
