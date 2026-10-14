@@ -14,7 +14,7 @@
 
   var $ = function (s) { return document.querySelector(s); };
   function t(k) { return L[k] || k; }
-  function setStatus(txt, on) { var s = $('#status'); if (!s) return; s.querySelector('span').textContent = txt; s.classList.toggle('on', !!on); }
+  function setStatus(txt, on) { var s = $('#status'); if (!s) return; var sp = s.querySelector('.status-text') || s.querySelectorAll('span')[1] || s.querySelector('span'); if (sp) sp.textContent = txt; s.classList.toggle('on', !!on); }
 
   function initSignal() {
     if (sig) return;

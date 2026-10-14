@@ -3,6 +3,9 @@
 ## Cos'è
 Yondesk collega chi ha bisogno di assistenza (**assistito**) con chi la fornisce (**operatore**), per vedere e controllare lo schermo da remoto in modo sicuro. Funziona su Windows, macOS, Linux, Android, iOS e nel browser.
 
+## Demo guidata (un solo dispositivo)
+Se non hai due dispositivi, nella pagina **Demo** premi **"Guarda la demo guidata"**: parte una simulazione di ~15 secondi che mostra consenso, schermo remoto, cursore dell'operatore, chat e invio file, per capire subito come funziona una sessione.
+
 ## Avvio rapido (browser, senza installare nulla)
 1. Apri la pagina **Demo** del sito su entrambi i dispositivi.
 2. Sul dispositivo da assistere scegli **"Mi fanno assistenza"**: compaiono **ID** e **password**.

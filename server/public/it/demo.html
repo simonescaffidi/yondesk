@@ -24,6 +24,11 @@
     <p>Apri questa pagina su due dispositivi (o due schede). Uno fa da <strong>dispositivo assistito</strong> e mostra ID e password, l'altro da <strong>operatore</strong> e si connette. Funziona con WebRTC cifrato end-to-end.</p>
   </div>
 
+  <div class="demo-cta">
+    <div class="lead"><strong>Non hai due dispositivi a portata di mano?</strong> Guarda in 15 secondi com'è una sessione di assistenza: consenso, schermo remoto, cursore dell'operatore, chat e invio file.</div>
+    <button class="btn-demo" id="btn-guided">▶ Guarda la demo guidata</button>
+  </div>
+
   <div class="notice" style="margin-bottom:1.5rem"><strong>Nota.</strong> Nel browser il controllo è dimostrativo (schermo in diretta, cursore dell'operatore, chat, file, appunti). Il controllo reale di mouse e tastiera del sistema operativo richiede l'<a href="/it/download.html" style="color:var(--brand2);text-decoration:underline">app nativa</a>, sempre con consenso e banner di sessione visibili.</div>
 
   <div id="demo-root" class="demo-wrap">
@@ -46,7 +51,7 @@
         <button id="btn-connect" class="btn btn-primary" style="width:100%">Connetti</button>
       </div>
 
-      <div class="status" id="status"><span class="dot"></span><span>In attesa…</span></div>
+      <div class="status" id="status"><span class="dot"></span><span class="status-text">In attesa…</span></div>
 
       <div class="chatbox" style="display:none" id="chatwrap">
         <div class="chatlog" id="chatlog"></div>
@@ -90,8 +95,10 @@
 <!--#FOOTER#-->
 <!--#COOKIE#-->
 <script>window.__T={connected_server:"Connesso al server",reconnecting:"Riconnessione…",waiting_accept:"In attesa di conferma…",wrong_password:"Password errata",rejected:"Richiesta rifiutata",host_offline:"Dispositivo non in linea",too_many:"Troppi tentativi, riprova più tardi",err_self:"Non puoi connetterti a te stesso",error:"Errore",session_ended:"Sessione terminata",in_session:"Sessione attiva",waiting:"In attesa…",idle:"In attesa…",an_operator:"Un operatore",operator:"Operatore",share_denied:"Condivisione schermo annullata",banner_sharing:"Stai condividendo lo schermo",connecting:"Connessione…",fill_fields:"Inserisci ID e password",peer_left:"L'altro utente ha chiuso",ph_host:"Stai condividendo il tuo schermo.",ph_viewer:"Schermo remoto in arrivo…",file_received:"File ricevuto"};</script>
+<script>window.__SIM={top:"🔒 Sessione cifrata end-to-end — Operatore: Marco · PC di Giulia",winTitle:"Impostazioni di rete",rowWifi:"Wi-Fi",rowVpn:"VPN aziendale",rowFw:"Firewall",ok:"Attivo",file:"report-diagnostica.pdf inviato",who:"Marco (operatore)",consentMsg:"vuole avviare una sessione di assistenza sul tuo dispositivo.",deny:"Rifiuta",allow:"Consenti",chat1:"Ciao! Vedo lo schermo, sistemo subito la connessione.",chat2:"Perfetto, grazie!",chat3:"Fatto ✅ Ti ho inviato il report.",endTitle:"Ecco com'è una sessione Yondesk",endText:"Sicura, cifrata end-to-end e sempre con il tuo consenso — su Windows, macOS, Linux, Android e iOS.",replay:"Rivedi",tryReal:"Prova la demo reale"};</script>
 <script src="/js/yondesk.js"></script>
 <script src="/js/demo.js"></script>
+<script src="/js/demo-sim.js"></script>
 <script src="/js/site.js"></script>
 </body>
 </html>

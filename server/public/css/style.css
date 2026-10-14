@@ -132,8 +132,62 @@ section{padding:clamp(2.5rem,6vw,4.5rem) 0}
 .chatin input{flex:1;border:none;background:var(--bg2);color:var(--txt);padding:.7rem;outline:none}
 .chatin button{border:none;background:var(--brand);color:#06121f;padding:0 1rem;cursor:pointer;font-weight:700}
 .status{display:inline-flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--muted);margin-top:.6rem}
-.status .dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.status .dot{flex:none;width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.status .status-text{min-width:0}
 .status.on .dot{background:var(--ok);box-shadow:0 0 0 4px rgba(52,211,153,.2)}
+
+/* Demo guidata (simulazione a schermo singolo) */
+.demo-cta{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.2rem;margin-bottom:1.5rem}
+.demo-cta .lead{flex:1;min-width:220px;color:var(--muted);font-size:.92rem}
+.demo-cta .lead strong{color:var(--txt)}
+.btn-demo{display:inline-flex;align-items:center;gap:.5rem;border:none;cursor:pointer;font-weight:800;font-size:.95rem;padding:.7rem 1.2rem;border-radius:10px;background:linear-gradient(90deg,var(--brand),var(--brand2));color:#06121f;white-space:nowrap}
+.btn-demo:hover{filter:brightness(1.07)}
+.sim{position:absolute;inset:0;z-index:7;display:none;overflow:hidden;font-size:.85rem}
+.sim.show{display:block}
+.sim-wall{position:absolute;inset:0;background:radial-gradient(120% 120% at 20% 0%,#113a63 0%,#0a2740 45%,#061a2c 100%)}
+.sim-wall::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:34px 34px;opacity:.5}
+.sim-top{position:absolute;top:0;left:0;right:0;height:30px;z-index:4;display:flex;align-items:center;gap:.5rem;padding:0 .8rem;color:#dbeafe;background:rgba(5,11,22,.72);border-bottom:1px solid rgba(255,255,255,.08);font-size:.74rem;transform:translateY(-100%);transition:transform .4s ease}
+.sim-top.show{transform:none}
+.sim-top .sdot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(52,211,153,.25)}
+.sim-dock{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:.7rem;z-index:3;background:rgba(5,11,22,.55);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:.5rem .7rem;backdrop-filter:blur(6px)}
+.sim-ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:1.3rem;background:linear-gradient(160deg,#1b3350,#0f2338);border:1px solid rgba(255,255,255,.12);transition:transform .2s,box-shadow .2s}
+.sim-ico.hot{transform:translateY(-6px) scale(1.08);box-shadow:0 10px 24px rgba(27,211,232,.35)}
+.sim-win{position:absolute;left:8%;top:22%;width:60%;z-index:5;background:#0e1a2c;border:1px solid rgba(255,255,255,.14);border-radius:12px;box-shadow:0 26px 60px rgba(0,0,0,.55);overflow:hidden;opacity:0;transform:translateY(14px) scale(.97);transition:opacity .35s,transform .35s;pointer-events:none}
+.sim-win.show{opacity:1;transform:none}
+.sim-win .tb{height:32px;display:flex;align-items:center;gap:.45rem;padding:0 .7rem;background:#132236;border-bottom:1px solid rgba(255,255,255,.08);color:#dbe8ff;font-weight:600;font-size:.8rem}
+.sim-win .tb .b{width:11px;height:11px;border-radius:50%}
+.sim-win .bd{padding:1rem 1.1rem;color:#c9d9ee}
+.sim-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.sim-row:last-child{border-bottom:none}
+.sim-tgl{flex:none;width:46px;height:26px;border-radius:14px;background:#33415a;position:relative;transition:background .3s}
+.sim-tgl .k{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .3s}
+.sim-tgl.on{background:var(--ok)}
+.sim-tgl.on .k{left:23px}
+.sim-cursor{position:absolute;left:50%;top:92%;width:22px;height:22px;z-index:9;pointer-events:none;opacity:0;transition:left 1s cubic-bezier(.4,0,.2,1),top 1s cubic-bezier(.4,0,.2,1),opacity .3s;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+.sim-cursor.show{opacity:1}
+.sim-cursor.click{animation:simclick .35s ease}
+@keyframes simclick{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
+.sim-chat{position:absolute;right:14px;bottom:70px;width:min(240px,46%);z-index:8;display:flex;flex-direction:column;gap:.45rem}
+.sim-bubble{padding:.5rem .7rem;border-radius:12px;font-size:.8rem;line-height:1.3;opacity:0;transform:translateY(8px);transition:opacity .3s,transform .3s;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.sim-bubble.show{opacity:1;transform:none}
+.sim-bubble.op{align-self:flex-start;background:#13263d;border:1px solid rgba(255,255,255,.12);color:#eaf2ff}
+.sim-bubble.me{align-self:flex-end;background:var(--brand);color:#06121f;font-weight:600}
+.sim-toast{position:absolute;left:14px;bottom:70px;z-index:8;background:rgba(5,11,22,.9);border:1px solid rgba(255,255,255,.14);color:#eaf2ff;border-radius:10px;padding:.5rem .75rem;font-size:.8rem;opacity:0;transform:translateY(8px);transition:opacity .3s,transform .3s}
+.sim-toast.show{opacity:1;transform:none}
+.sim-consent{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:1rem;background:rgba(0,0,0,.5);opacity:0;transition:opacity .3s}
+.sim-consent.show{opacity:1}
+.sim-consent .cbox{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1.4rem;text-align:center;max-width:320px}
+.sim-consent .who{font-weight:800;color:var(--brand2);margin:.4rem 0 .2rem}
+.sim-consent .crow{display:flex;gap:.5rem;margin-top:1rem}
+.sim-consent .crow .btn{flex:1;padding:.55rem}
+.sim-cbtn.hot{box-shadow:0 0 0 3px rgba(27,211,232,.6)}
+.sim-end{position:absolute;inset:0;z-index:12;display:none;place-items:center;text-align:center;padding:1.4rem;background:rgba(6,15,26,.88);backdrop-filter:blur(3px)}
+.sim-end.show{display:grid}
+.sim-end h3{font-size:1.3rem;margin-bottom:.5rem;color:#fff}
+.sim-end p{color:#aec3dd;max-width:420px;margin:0 auto 1.1rem}
+.sim-end .erow{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.sim-close{position:absolute;top:6px;right:8px;z-index:13;background:rgba(5,11,22,.7);border:1px solid rgba(255,255,255,.18);color:#dbeafe;border-radius:8px;width:28px;height:28px;cursor:pointer;line-height:1;font-size:1rem}
+@media(max-width:600px){.sim-win{width:84%;left:8%}.sim-chat{width:54%}}
 .consent{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;place-items:center;padding:1rem}
 .consent.show{display:grid}
 .consent .box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.8rem;max-width:420px;text-align:center}

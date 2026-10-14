@@ -20,6 +20,11 @@
 <main id="main" class="container" style="padding-top:2rem">
   <div class="section-head" style="margin-bottom:1.5rem"><p class="eyebrow">Live demo</p><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Try it in the browser</h1><p>Open this page on two devices (or two tabs). One acts as the <strong>assisted device</strong> and shows an ID and password, the other as the <strong>operator</strong> and connects. Powered by end-to-end encrypted WebRTC.</p></div>
 
+  <div class="demo-cta">
+    <div class="lead"><strong>No second device at hand?</strong> See in 15 seconds what a support session looks like: consent, remote screen, operator cursor, chat and file transfer.</div>
+    <button class="btn-demo" id="btn-guided">▶ Watch the guided demo</button>
+  </div>
+
   <div class="notice" style="margin-bottom:1.5rem"><strong>Note.</strong> In the browser, control is for demonstration (live screen, operator cursor, chat, files, clipboard). Real mouse/keyboard control of the OS requires the <a href="/en/download.html" style="color:var(--brand2);text-decoration:underline">native app</a>, always with visible consent and a session banner.</div>
 
   <div id="demo-root" class="demo-wrap">
@@ -39,7 +44,7 @@
         <div class="field"><label>Password</label><input id="conn-pass" placeholder="password"></div>
         <button id="btn-connect" class="btn btn-primary" style="width:100%">Connect</button>
       </div>
-      <div class="status" id="status"><span class="dot"></span><span>Waiting…</span></div>
+      <div class="status" id="status"><span class="dot"></span><span class="status-text">Waiting…</span></div>
       <div class="chatbox" style="display:none" id="chatwrap">
         <div class="chatlog" id="chatlog"></div>
         <div class="chatin"><input id="chat-input" placeholder="Type a message…"><button id="chat-send">Send</button></div>
@@ -80,8 +85,10 @@
 <!--#FOOTER#-->
 <!--#COOKIE#-->
 <script>window.__T={connected_server:"Connected to server",reconnecting:"Reconnecting…",waiting_accept:"Waiting for confirmation…",wrong_password:"Wrong password",rejected:"Request rejected",host_offline:"Device offline",too_many:"Too many attempts, try again later",err_self:"You can't connect to yourself",error:"Error",session_ended:"Session ended",in_session:"Session active",waiting:"Waiting…",idle:"Waiting…",an_operator:"An operator",operator:"Operator",share_denied:"Screen sharing cancelled",banner_sharing:"You are sharing your screen",connecting:"Connecting…",fill_fields:"Enter ID and password",peer_left:"The other user left",ph_host:"You are sharing your screen.",ph_viewer:"Remote screen incoming…",file_received:"File received"};</script>
+<script>window.__SIM={top:"🔒 End-to-end encrypted session — Operator: Marco · Giulia's PC",winTitle:"Network settings",rowWifi:"Wi-Fi",rowVpn:"Company VPN",rowFw:"Firewall",ok:"On",file:"diagnostics-report.pdf sent",who:"Marco (operator)",consentMsg:"wants to start a support session on your device.",deny:"Deny",allow:"Allow",chat1:"Hi! I can see your screen, fixing the connection now.",chat2:"Great, thanks!",chat3:"Done ✅ I've sent you the report.",endTitle:"That's what a Yondesk session looks like",endText:"Secure, end-to-end encrypted and always with your consent — on Windows, macOS, Linux, Android and iOS.",replay:"Replay",tryReal:"Try the real demo"};</script>
 <script src="/js/yondesk.js"></script>
 <script src="/js/demo.js"></script>
+<script src="/js/demo-sim.js"></script>
 <script src="/js/site.js"></script>
 </body>
 </html>
