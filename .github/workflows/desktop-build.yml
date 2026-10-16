@@ -29,16 +29,31 @@ jobs:
       - name: Rebuild native input module (control)
         continue-on-error: true
         run: npm run rebuild-native
+      - name: Prepare macOS signing env (solo se i secret esistono)
+        if: runner.os == 'macOS'
+        env:
+          MAC_CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          MAC_CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$MAC_CSC_LINK" ]; then
+            {
+              echo "CSC_LINK=$MAC_CSC_LINK"
+              echo "CSC_KEY_PASSWORD=$MAC_CSC_KEY_PASSWORD"
+              echo "APPLE_ID=$APPLE_ID"
+              echo "APPLE_APP_SPECIFIC_PASSWORD=$APPLE_APP_SPECIFIC_PASSWORD"
+              echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
+            } >> "$GITHUB_ENV"
+            echo "macOS: firma Developer ID + notarizzazione ATTIVE"
+          else
+            echo "macOS: nessun secret di firma -> build ad-hoc"
+          fi
       - name: Build
         run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Firma + notarizzazione macOS (opzionali: se vuoti -> build ad-hoc)
-          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
