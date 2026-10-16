@@ -1,6 +1,6 @@
 {
   "name": "yondesk-agent",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Yondesk agent desktop (Windows, macOS, Linux)",
   "main": "src/main.js",
   "author": "Simone Scaffidi Domianello <info@simonescaffidi.it>",
@@ -36,9 +36,8 @@
     "directories": { "output": "dist", "buildResources": "build" },
     "files": ["src/**/*", "package.json"],
     "asarUnpack": ["**/node_modules/@nut-tree-fork/**"],
-    "win": { "target": ["nsis"], "artifactName": "Yondesk-Setup-${version}.${ext}" },
-    "mac": { "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }], "category": "public.app-category.utilities", "hardenedRuntime": true,
-      "entitlements": "build/entitlements.mac.plist", "entitlementsInherit": "build/entitlements.mac.plist" },
-    "linux": { "target": ["AppImage", "deb"], "category": "Utility", "maintainer": "www.simonescaffidi.it" }
+    "win": { "target": ["nsis"], "artifactName": "Yondesk-Setup.${ext}" },
+    "mac": { "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }], "artifactName": "Yondesk-mac-${arch}.${ext}", "category": "public.app-category.utilities", "hardenedRuntime": false, "gatekeeperAssess": false },
+    "linux": { "target": ["AppImage", "deb"], "artifactName": "Yondesk.${ext}", "category": "Utility", "maintainer": "www.simonescaffidi.it" }
   }
 }

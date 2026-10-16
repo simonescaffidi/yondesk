@@ -20,30 +20,26 @@
 <main id="main" class="container" style="padding-top:2rem">
   <div class="section-head"><p class="eyebrow">Download</p><h1>Scegli la tua piattaforma</h1><p>Un'unica app per fare sia da <strong>operatore</strong> (ti colleghi a un dispositivo remoto) sia da <strong>assistito</strong>. Abilita controllo completo di mouse e tastiera, accesso non presidiato e cattura schermo di sistema — sempre con consenso e banner di sessione visibili.</p></div>
   <div class="grid c3">
-    <article class="card"><h3>🪟 Windows</h3><p>Windows 10/11 (x64). Installer <code>.exe</code>.</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="win">Scarica per Windows</a></article>
-    <article class="card"><h3>🍎 macOS</h3><p>macOS 12+. Pacchetto <code>.dmg</code>.</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem"><a class="btn btn-primary" href="#" data-rel="mac_arm64">Apple Silicon</a><a class="btn btn-ghost" href="#" data-rel="mac_x64">Intel</a></div></article>
-    <article class="card"><h3>🐧 Linux</h3><p>AppImage universale o pacchetto <code>.deb</code>.</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem"><a class="btn btn-primary" href="#" data-rel="linux">AppImage</a><a class="btn btn-ghost" href="#" data-rel="linux_deb">.deb</a></div></article>
-    <article class="card"><h3>🤖 Android</h3><p>Android 8+. File <code>.apk</code> (abilita l'installazione da origini sconosciute).</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="android">Scarica APK</a></article>
+    <article class="card"><h3>🪟 Windows</h3><p>Windows 10/11 (x64). Installer <code>.exe</code>.</p><a class="btn btn-primary" style="margin-top:1rem" href="https://github.com/simonescaffidi/yondesk/releases/latest/download/Yondesk-Setup.exe" target="_blank" rel="noopener">Scarica per Windows</a></article>
+    <article class="card"><h3>🍎 macOS</h3><p>macOS 12+. Pacchetto <code>.dmg</code>.</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem"><a class="btn btn-primary" href="https://github.com/simonescaffidi/yondesk/releases/latest/download/Yondesk-mac-arm64.dmg" target="_blank" rel="noopener">Apple Silicon</a><a class="btn btn-ghost" href="https://github.com/simonescaffidi/yondesk/releases/latest/download/Yondesk-mac-x64.dmg" target="_blank" rel="noopener">Intel</a></div><p style="font-size:.82rem;color:var(--muted);margin-top:.6rem">Primo avvio: vedi la nota qui sotto 👇</p></article>
+    <article class="card"><h3>🐧 Linux</h3><p>AppImage universale o pacchetto <code>.deb</code>.</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem"><a class="btn btn-primary" href="https://github.com/simonescaffidi/yondesk/releases/latest/download/Yondesk.AppImage" target="_blank" rel="noopener">AppImage</a><a class="btn btn-ghost" href="https://github.com/simonescaffidi/yondesk/releases/latest/download/Yondesk.deb" target="_blank" rel="noopener">.deb</a></div></article>
+    <article class="card"><h3>🤖 Android</h3><p>Android 8+. File <code>.apk</code> (abilita l'installazione da origini sconosciute).</p><a class="btn btn-primary" style="margin-top:1rem" href="https://github.com/simonescaffidi/yondesk/releases/latest/download/app-release.apk" target="_blank" rel="noopener">Scarica APK</a></article>
     <article class="card"><h3>📱 iOS</h3><p>App in arrivo su App Store. Intanto usa il client web dal browser di iPhone/iPad.</p><a class="btn btn-ghost" style="margin-top:1rem" href="/it/demo.html">Apri nel browser</a></article>
     <article class="card"><h3>🌐 Client web</h3><p>Nessuna installazione: usa il browser.</p><a class="btn btn-ghost" style="margin-top:1rem" href="/it/demo.html">Apri nel browser</a></article>
   </div>
-  <div class="notice" style="margin-top:2rem"><strong>Download diretti.</strong> I file vengono scaricati dalle release ufficiali su GitHub. Se un pulsante non trova il file, apre la pagina delle release dove sono elencate tutte le versioni. Il client web è già pienamente funzionante.</div>
+
+  <div class="notice" style="margin-top:2rem"><strong>macOS — primo avvio.</strong> L'app non è ancora firmata/notarizzata da Apple, quindi al primo avvio macOS la blocca (“impossibile verificare che non contenga malware” / “danneggiata”). <strong>Non è un virus</strong>: è il controllo di Apple sulle app esterne all'App Store. Per aprirla:
+    <ol style="margin:.6rem 0 0;padding-left:1.2rem;line-height:1.6">
+      <li>Trascina <strong>Yondesk</strong> nella cartella <em>Applicazioni</em>.</li>
+      <li>Fai <strong>clic destro</strong> sull'app → <strong>Apri</strong> → <strong>Apri</strong>. (Da fare solo la prima volta.)</li>
+      <li>Se compare ancora “danneggiata”, apri il <em>Terminale</em> ed esegui:<br><code>xattr -dr com.apple.quarantine /Applications/Yondesk.app</code> poi riavvia l'app.</li>
+    </ol>
+  </div>
+
+  <div class="notice" style="margin-top:1rem"><strong>Download diretti.</strong> I file vengono scaricati dalle release ufficiali su GitHub (sempre l'ultima versione). Se un link dà errore, la build è ancora in pubblicazione: riprova tra qualche minuto o apri la <a href="https://github.com/simonescaffidi/yondesk/releases/latest" target="_blank" rel="noopener" style="color:var(--brand2);text-decoration:underline">pagina delle release</a>. Il client web è già pienamente funzionante.</div>
 </main>
 <!--#FOOTER#-->
 <!--#COOKIE#-->
 <script src="/js/site.js"></script>
-<script>
-(function(){
-  function apply(d){
-    var A=(d&&d.assets)||{};
-    var map={win:A.win,mac:A.mac_arm64||A.mac_x64,mac_arm64:A.mac_arm64||A.mac_x64,mac_x64:A.mac_x64||A.mac_arm64,linux:A.linux,linux_deb:A.linux_deb,android:A.android};
-    var latest=(d&&d.latest)||'https://github.com/simonescaffidi/yondesk/releases/latest';
-    document.querySelectorAll('[data-rel]').forEach(function(a){
-      a.href=map[a.getAttribute('data-rel')]||latest; a.target='_blank'; a.rel='noopener';
-    });
-  }
-  fetch('/api/releases').then(function(r){return r.json();}).then(apply).catch(function(){apply(null);});
-})();
-</script>
 </body>
 </html>

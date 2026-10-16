@@ -28,6 +28,9 @@ L'app nativa (Windows, macOS, Linux) fa sia da **operatore** sia da **assistito*
 3. Si apre una finestra con lo schermo remoto: muovi mouse, scrivi, usa scorciatoie (es. Ctrl+C), rotella e doppio click. Il controllo parte solo se l'altro utente lo consente.
 4. Pulsanti: **Appunti** (incolla i tuoi appunti sul PC remoto), schermo intero, **Termina**.
 
+### Primo avvio su macOS (app non ancora notarizzata)
+L'app non è ancora firmata/notarizzata da Apple: al primo avvio macOS la blocca ("impossibile verificare che non contenga malware" / "danneggiata"). Non è un virus. Per aprirla: trascina **Yondesk** in *Applicazioni*, poi **clic destro sull'app → Apri → Apri** (solo la prima volta). Se compare ancora "danneggiata", nel *Terminale*: `xattr -dr com.apple.quarantine /Applications/Yondesk.app` e riavvia.
+
 ### Permessi di sistema
 - **macOS**: autorizza *Registrazione schermo* e *Accessibilità* in Impostazioni → Privacy e sicurezza.
 - **Windows/Linux**: nessuna configurazione particolare; su Linux (Wayland) usa la condivisione schermo del sistema.
