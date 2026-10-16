@@ -59,9 +59,44 @@ app.get('/api/ice', (req, res) => {
 
 app.get('/api/health', (req, res) => res.json({ ok: true, ...stats() }));
 
-app.get('/api/releases', (req, res) => {
+// Release: link diretti per piattaforma, letti dalla GitHub API (con cache)
+let relCache = { at: 0, data: null };
+async function getReleases() {
   const repo = process.env.GITHUB_REPO || 'simonescaffidi/yondesk';
-  res.json({ repo, latest: `https://github.com/${repo}/releases/latest` });
+  const base = { repo, latest: `https://github.com/${repo}/releases/latest`, tag: null, assets: {} };
+  const fresh = relCache.data && (Date.now() - relCache.at) < 10 * 60 * 1000;
+  if (fresh) return relCache.data;
+  try {
+    const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'yondesk-site' };
+    if (process.env.GITHUB_TOKEN) headers.Authorization = 'Bearer ' + process.env.GITHUB_TOKEN;
+    const r = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers });
+    if (r.ok) {
+      const j = await r.json();
+      base.tag = j.tag_name || null;
+      (j.assets || []).forEach(a => {
+        const n = (a.name || '').toLowerCase(), u = a.browser_download_url;
+        if (n.endsWith('.exe')) base.assets.win = u;
+        else if (n.endsWith('.dmg') && n.includes('arm64')) base.assets.mac_arm64 = u;
+        else if (n.endsWith('.dmg')) base.assets.mac_x64 = u;
+        else if (n.endsWith('.appimage')) base.assets.linux = u;
+        else if (n.endsWith('.deb')) base.assets.linux_deb = u;
+        else if (n.endsWith('.apk')) base.assets.android = u;
+      });
+      relCache = { at: Date.now(), data: base }; // cache solo i successi
+    } else {
+      relCache = { at: Date.now() - 9 * 60 * 1000, data: base }; // riprova tra ~1 min
+    }
+  } catch (e) {
+    relCache = { at: Date.now() - 9 * 60 * 1000, data: base };
+  }
+  return base;
+}
+app.get('/api/releases', async (req, res) => {
+  try { res.json(await getReleases()); }
+  catch (e) {
+    const repo = process.env.GITHUB_REPO || 'simonescaffidi/yondesk';
+    res.json({ repo, latest: `https://github.com/${repo}/releases/latest`, assets: {} });
+  }
 });
 
 // Health check (200 se l'app risponde)

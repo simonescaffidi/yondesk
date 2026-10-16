@@ -20,22 +20,30 @@
 <main id="main" class="container" style="padding-top:2rem">
   <div class="section-head"><p class="eyebrow">Download</p><h1>Scegli la tua piattaforma</h1><p>Un'unica app per fare sia da <strong>operatore</strong> (ti colleghi a un dispositivo remoto) sia da <strong>assistito</strong>. Abilita controllo completo di mouse e tastiera, accesso non presidiato e cattura schermo di sistema — sempre con consenso e banner di sessione visibili.</p></div>
   <div class="grid c3">
-    <article class="card"><h3>🪟 Windows</h3><p>Windows 10/11 (x64). Installer <code>.exe</code>.</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="win">Scarica .exe</a></article>
-    <article class="card"><h3> macOS</h3><p>macOS 12+. Pacchetto <code>.dmg</code> per Apple Silicon (arm64) e Intel (x64).</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="mac">Scarica .dmg</a></article>
-    <article class="card"><h3>🐧 Linux</h3><p>AppImage universale e <code>.deb</code>.</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="linux">Scarica AppImage</a></article>
-    <article class="card"><h3>🤖 Android</h3><p>Android 8+. Da Google Play o APK.</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="android">Google Play</a></article>
-    <article class="card"><h3>📱 iOS</h3><p>iOS 15+. Da App Store (viewer + condivisione schermo).</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="ios">App Store</a></article>
+    <article class="card"><h3>🪟 Windows</h3><p>Windows 10/11 (x64). Installer <code>.exe</code>.</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="win">Scarica per Windows</a></article>
+    <article class="card"><h3>🍎 macOS</h3><p>macOS 12+. Pacchetto <code>.dmg</code>.</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem"><a class="btn btn-primary" href="#" data-rel="mac_arm64">Apple Silicon</a><a class="btn btn-ghost" href="#" data-rel="mac_x64">Intel</a></div></article>
+    <article class="card"><h3>🐧 Linux</h3><p>AppImage universale o pacchetto <code>.deb</code>.</p><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem"><a class="btn btn-primary" href="#" data-rel="linux">AppImage</a><a class="btn btn-ghost" href="#" data-rel="linux_deb">.deb</a></div></article>
+    <article class="card"><h3>🤖 Android</h3><p>Android 8+. File <code>.apk</code> (abilita l'installazione da origini sconosciute).</p><a class="btn btn-primary" style="margin-top:1rem" href="#" data-rel="android">Scarica APK</a></article>
+    <article class="card"><h3>📱 iOS</h3><p>App in arrivo su App Store. Intanto usa il client web dal browser di iPhone/iPad.</p><a class="btn btn-ghost" style="margin-top:1rem" href="/it/demo.html">Apri nel browser</a></article>
     <article class="card"><h3>🌐 Client web</h3><p>Nessuna installazione: usa il browser.</p><a class="btn btn-ghost" style="margin-top:1rem" href="/it/demo.html">Apri nel browser</a></article>
   </div>
-  <div class="notice" style="margin-top:2rem"><strong>Build in arrivo.</strong> I binari firmati vengono pubblicati come release su GitHub tramite CI. Finché non sono pubblicati, i pulsanti puntano alla pagina delle release. Il client web è già pienamente funzionante.</div>
+  <div class="notice" style="margin-top:2rem"><strong>Download diretti.</strong> I file vengono scaricati dalle release ufficiali su GitHub. Se un pulsante non trova il file, apre la pagina delle release dove sono elencate tutte le versioni. Il client web è già pienamente funzionante.</div>
 </main>
 <!--#FOOTER#-->
 <!--#COOKIE#-->
 <script src="/js/site.js"></script>
 <script>
-fetch('/api/releases').then(function(r){return r.json();}).then(function(d){
-  document.querySelectorAll('[data-rel]').forEach(function(a){a.href=d.latest;a.target='_blank';a.rel='noopener';});
-}).catch(function(){});
+(function(){
+  function apply(d){
+    var A=(d&&d.assets)||{};
+    var map={win:A.win,mac:A.mac_arm64||A.mac_x64,mac_arm64:A.mac_arm64||A.mac_x64,mac_x64:A.mac_x64||A.mac_arm64,linux:A.linux,linux_deb:A.linux_deb,android:A.android};
+    var latest=(d&&d.latest)||'https://github.com/simonescaffidi/yondesk/releases/latest';
+    document.querySelectorAll('[data-rel]').forEach(function(a){
+      a.href=map[a.getAttribute('data-rel')]||latest; a.target='_blank'; a.rel='noopener';
+    });
+  }
+  fetch('/api/releases').then(function(r){return r.json();}).then(apply).catch(function(){apply(null);});
+})();
 </script>
 </body>
 </html>
