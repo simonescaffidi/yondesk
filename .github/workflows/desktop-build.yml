@@ -74,6 +74,13 @@ jobs:
       - name: Compute tag from version
         id: ver
         run: echo "tag=v$(node -p "require('./agent-desktop/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Remove stale desktop assets (vecchi nomi)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.ver.outputs.tag }}"
+          ids=$(gh api "repos/${{ github.repository }}/releases/tags/$tag" --jq '.assets[] | select(.name|test("^yondesk-agent")) | .id' 2>/dev/null || true)
+          for id in $ids; do echo "delete asset $id"; gh api -X DELETE "repos/${{ github.repository }}/releases/assets/$id" || true; done
       - uses: actions/download-artifact@v4
         with: { path: artifacts }
       - name: Publish release

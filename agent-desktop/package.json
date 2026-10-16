@@ -10,10 +10,10 @@
   "scripts": {
     "start": "electron .",
     "rebuild-native": "electron-rebuild -f -o @nut-tree-fork/nut-js",
-    "dist": "electron-builder --publish never",
-    "dist:win": "electron-builder --win --publish never",
-    "dist:mac": "electron-builder --mac --publish never",
-    "dist:linux": "electron-builder --linux --publish never"
+    "dist": "electron-builder --config electron-builder.config.js --publish never",
+    "dist:win": "electron-builder --config electron-builder.config.js --win --publish never",
+    "dist:mac": "electron-builder --config electron-builder.config.js --mac --publish never",
+    "dist:linux": "electron-builder --config electron-builder.config.js --linux --publish never"
   },
   "dependencies": {
     "electron-store": "^8.2.0",
