@@ -99,7 +99,7 @@ ipcMain.on('force-stop', () => { if (win) win.webContents.send('force-stop'); })
 /* ---------------- IPC: config ---------------- */
 ipcMain.handle('config-get', () => ({
   deviceKey: ensureDeviceKey(),
-  signalUrl: store.get('signalUrl') || process.env.TELEASSIST_SERVER || 'https://yondesk-production.up.railway.app',
+  signalUrl: store.get('signalUrl') || process.env.TELEASSIST_SERVER || 'https://yondesk.com',
   unattended: store.get('unattended') || { enabled: false, hash: null },
   name: store.get('name') || require('os').hostname()
 }));

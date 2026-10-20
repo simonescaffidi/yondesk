@@ -6,7 +6,7 @@ import 'signaling.dart';
 import 'session.dart';
 
 const kServer = String.fromEnvironment('TELEASSIST_SERVER',
-    defaultValue: 'https://yondesk-production.up.railway.app');
+    defaultValue: 'https://yondesk.com');
 
 void main() => runApp(const YondeskApp());
 

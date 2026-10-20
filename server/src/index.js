@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 
 // Configurazione ICE (STUN/TURN) letta dalle variabili d'ambiente
 app.get('/api/ice', (req, res) => {
-  const servers = [{ urls: (process.env.STUN_URLS || 'stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302').split(',') }];
+  const servers = [{ urls: (process.env.STUN_URLS || 'stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302,stun:stun.cloudflare.com:3478').split(',') }];
   if (process.env.TURN_URLS) {
     servers.push({
       urls: process.env.TURN_URLS.split(','),
