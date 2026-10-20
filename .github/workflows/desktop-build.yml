@@ -50,6 +50,22 @@ jobs:
           else
             echo "macOS: nessun secret di firma -> build ad-hoc"
           fi
+      - name: Prepare Windows signing env (solo se i secret esistono)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          if [ -n "$WIN_CSC_LINK" ]; then
+            {
+              echo "CSC_LINK=$WIN_CSC_LINK"
+              echo "CSC_KEY_PASSWORD=$WIN_CSC_KEY_PASSWORD"
+            } >> "$GITHUB_ENV"
+            echo "Windows: firma Authenticode ATTIVA"
+          else
+            echo "Windows: nessun certificato -> build non firmata (SmartScreen avvisa al primo avvio)"
+          fi
       - name: Build
         run: npm run dist
         env:
