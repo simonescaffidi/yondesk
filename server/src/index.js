@@ -63,7 +63,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true, ...stats() }));
 let relCache = { at: 0, data: null };
 async function getReleases() {
   const repo = process.env.GITHUB_REPO || 'simonescaffidi/yondesk';
-  const base = { repo, latest: `https://github.com/${repo}/releases/latest`, tag: null, assets: {} };
+  const base = { repo, latest: `https://github.com/${repo}/releases/latest`, tag: null, assets: {}, ids: {} };
   const fresh = relCache.data && (Date.now() - relCache.at) < 10 * 60 * 1000;
   if (fresh) return relCache.data;
   try {
@@ -74,13 +74,14 @@ async function getReleases() {
       const j = await r.json();
       base.tag = j.tag_name || null;
       (j.assets || []).forEach(a => {
-        const n = (a.name || '').toLowerCase(), u = a.browser_download_url;
-        if (n.endsWith('.exe')) base.assets.win = u;
-        else if (n.endsWith('.dmg') && n.includes('arm64')) base.assets.mac_arm64 = u;
-        else if (n.endsWith('.dmg')) base.assets.mac_x64 = u;
-        else if (n.endsWith('.appimage')) base.assets.linux = u;
-        else if (n.endsWith('.deb')) base.assets.linux_deb = u;
-        else if (n.endsWith('.apk')) base.assets.android = u;
+        const n = (a.name || '').toLowerCase(), u = a.browser_download_url, id = a.id;
+        if (n.includes('portable') && n.endsWith('.exe')) { base.assets.win = u; base.ids['win-portable'] = id; }
+        else if (n.endsWith('.exe')) { base.assets.win_setup = u; base.ids['win-setup'] = id; }
+        else if (n.endsWith('.dmg') && n.includes('arm64')) { base.assets.mac_arm64 = u; base.ids['mac-arm64'] = id; }
+        else if (n.endsWith('.dmg')) { base.assets.mac_x64 = u; base.ids['mac-x64'] = id; }
+        else if (n.endsWith('.appimage')) { base.assets.linux = u; base.ids['linux-appimage'] = id; }
+        else if (n.endsWith('.deb')) { base.assets.linux_deb = u; base.ids['linux-deb'] = id; }
+        else if (n.endsWith('.apk')) { base.assets.android = u; base.ids['android'] = id; }
       });
       relCache = { at: Date.now(), data: base }; // cache solo i successi
     } else {
@@ -96,6 +97,42 @@ app.get('/api/releases', async (req, res) => {
   catch (e) {
     const repo = process.env.GITHUB_REPO || 'simonescaffidi/yondesk';
     res.json({ repo, latest: `https://github.com/${repo}/releases/latest`, assets: {} });
+  }
+});
+
+/*
+ * Download proxy: /dl/<key> -> redirect all'URL firmato dell'asset della release.
+ * Il repo è privato, quindi i link github.com/.../releases/download/* danno 404
+ * agli utenti. Qui il server (con GITHUB_TOKEN read-only) risolve l'asset e
+ * reindirizza all'URL firmato pubblico (valido ~1h). URL brandizzati e stabili.
+ */
+const DL_KEYS = ['win-portable', 'win-setup', 'mac-arm64', 'mac-x64', 'linux-appimage', 'linux-deb', 'android'];
+app.get('/dl/:key', async (req, res) => {
+  const key = String(req.params.key || '').toLowerCase();
+  if (!DL_KEYS.includes(key)) return res.status(404).send('Download non trovato');
+  const repo = process.env.GITHUB_REPO || 'simonescaffidi/yondesk';
+  if (!process.env.GITHUB_TOKEN) {
+    // Senza token non si può leggere un repo privato: fallback alla pagina release.
+    return res.redirect(302, `https://github.com/${repo}/releases/latest`);
+  }
+  try {
+    const rel = await getReleases();
+    const id = rel.ids && rel.ids[key];
+    if (!id) return res.status(404).send('Asset non disponibile (build in pubblicazione)');
+    const r = await fetch(`https://api.github.com/repos/${repo}/releases/assets/${id}`, {
+      headers: { Accept: 'application/octet-stream', 'User-Agent': 'yondesk-site', Authorization: 'Bearer ' + process.env.GITHUB_TOKEN },
+      redirect: 'manual'
+    });
+    const loc = r.headers.get('location');
+    if ((r.status === 302 || r.status === 301 || r.status === 307) && loc) return res.redirect(302, loc);
+    if (r.ok && r.body) { // alcuni runtime seguono il redirect: stream diretto
+      res.setHeader('Content-Type', 'application/octet-stream');
+      const buf = Buffer.from(await r.arrayBuffer());
+      return res.end(buf);
+    }
+    return res.status(502).send('Download temporaneamente non disponibile');
+  } catch (e) {
+    return res.redirect(302, `https://github.com/${repo}/releases/latest`);
   }
 });
 
