@@ -30,7 +30,19 @@ module.exports = {
   directories: { output: 'dist', buildResources: 'build' },
   files: ['src/**/*', 'package.json'],
   asarUnpack: ['**/node_modules/@nut-tree-fork/**'],
-  win: { target: ['nsis'], artifactName: 'Yondesk-Setup.${ext}' },
+  win: { target: ['nsis'], artifactName: 'Yondesk-Setup.${ext}', icon: 'build/icon.ico' },
+  nsis: {
+    // Installazione per-macchina: il collegamento va nel menu Start di tutti gli utenti
+    // (C:\ProgramData\...), evitando l'errore "Yondesk.lnk - Errore non specificato"
+    // che capita creando il collegamento nel profilo per-utente (AppData\Roaming).
+    oneClick: true,
+    perMachine: true,
+    allowElevation: true,
+    createDesktopShortcut: true,
+    createStartMenuShortcut: true,
+    shortcutName: 'Yondesk',
+    deleteAppDataOnUninstall: false
+  },
   mac: Object.assign(
     {
       target: [{ target: 'dmg', arch: ['x64', 'arm64'] }],
