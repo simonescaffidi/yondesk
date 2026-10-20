@@ -30,14 +30,16 @@ module.exports = {
   directories: { output: 'dist', buildResources: 'build' },
   files: ['src/**/*', 'package.json'],
   asarUnpack: ['**/node_modules/@nut-tree-fork/**'],
-  win: { target: ['nsis'], artifactName: 'Yondesk-Setup.${ext}', icon: 'build/icon.ico' },
+  // Due formati Windows: 'portable' (gira senza installare, zero admin/collegamenti,
+  // aggira l'errore del collegamento) e 'nsis' (installer classico, per-macchina).
+  win: { target: ['portable', 'nsis'], icon: 'build/icon.ico' },
+  portable: { artifactName: 'Yondesk-portable.${ext}' },
   nsis: {
-    // Installazione per-macchina: il collegamento va nel menu Start di tutti gli utenti
-    // (C:\ProgramData\...), evitando l'errore "Yondesk.lnk - Errore non specificato"
-    // che capita creando il collegamento nel profilo per-utente (AppData\Roaming).
-    oneClick: true,
+    artifactName: 'Yondesk-Setup.${ext}',
+    oneClick: false,
     perMachine: true,
     allowElevation: true,
+    allowToChangeInstallationDirectory: false,
     createDesktopShortcut: true,
     createStartMenuShortcut: true,
     shortcutName: 'Yondesk',
