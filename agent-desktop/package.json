@@ -5,7 +5,7 @@
   "main": "src/main.js",
   "author": "Simone Scaffidi Domianello <info@simonescaffidi.it>",
   "homepage": "https://www.simonescaffidi.it",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "start": "electron .",
