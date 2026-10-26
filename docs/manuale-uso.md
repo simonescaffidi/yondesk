@@ -31,6 +31,9 @@ L'app nativa (Windows, macOS, Linux) fa sia da **operatore** sia da **assistito*
 ### Primo avvio su macOS (app non ancora notarizzata)
 L'app non è ancora firmata/notarizzata da Apple: al primo avvio macOS la blocca ("impossibile verificare che non contenga malware" / "danneggiata"). Non è un virus. Per aprirla: trascina **Yondesk** in *Applicazioni*, poi **clic destro sull'app → Apri → Apri** (solo la prima volta). Se compare ancora "danneggiata", nel *Terminale*: `xattr -dr com.apple.quarantine /Applications/Yondesk.app` e riavvia.
 
+### Primo avvio su Windows (app non ancora firmata)
+L'app non è ancora firmata, quindi **SmartScreen** può mostrare un avviso blu ("Windows ha protetto il PC"). Non è un virus. Per aprirla: **Ulteriori informazioni → Esegui comunque**. Consiglio: usa la versione **Portable**, che gira senza installare nulla.
+
 ### Permessi di sistema
 - **macOS**: autorizza *Registrazione schermo* e *Accessibilità* in Impostazioni → Privacy e sicurezza.
 - **Windows/Linux**: nessuna configurazione particolare; su Linux (Wayland) usa la condivisione schermo del sistema.
