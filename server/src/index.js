@@ -107,14 +107,23 @@ app.get('/api/releases', async (req, res) => {
  * agli utenti. Qui il server (con GITHUB_TOKEN read-only) risolve l'asset e
  * reindirizza all'URL firmato pubblico (valido ~1h). URL brandizzati e stabili.
  */
-const DL_KEYS = ['win-portable', 'win-setup', 'mac-arm64', 'mac-x64', 'linux-appimage', 'linux-deb', 'android'];
+const DL_FILES = {
+  'win-portable': 'Yondesk-portable.exe',
+  'win-setup': 'Yondesk-Setup.exe',
+  'mac-arm64': 'Yondesk-mac-arm64.dmg',
+  'mac-x64': 'Yondesk-mac-x64.dmg',
+  'linux-appimage': 'Yondesk.AppImage',
+  'linux-deb': 'Yondesk.deb',
+  'android': 'app-release.apk'
+};
+const DL_KEYS = Object.keys(DL_FILES);
 app.get('/dl/:key', async (req, res) => {
   const key = String(req.params.key || '').toLowerCase();
   if (!DL_KEYS.includes(key)) return res.status(404).send('Download non trovato');
   const repo = process.env.GITHUB_REPO || 'simonescaffidi/yondesk';
   if (!process.env.GITHUB_TOKEN) {
-    // Senza token non si può leggere un repo privato: fallback alla pagina release.
-    return res.redirect(302, `https://github.com/${repo}/releases/latest`);
+    // Senza token: redirect diretto al file della release (funziona con repo pubblico).
+    return res.redirect(302, `https://github.com/${repo}/releases/latest/download/${DL_FILES[key]}`);
   }
   try {
     const rel = await getReleases();
