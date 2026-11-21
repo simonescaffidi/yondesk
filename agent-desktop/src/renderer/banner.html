@@ -2,6 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
 <style>
   *{box-sizing:border-box;font-family:system-ui,sans-serif}
   body{margin:0;height:44px;overflow:hidden}
@@ -19,13 +20,6 @@
   <span id="txt">Sessione di assistenza remota attiva</span>
   <button class="stop" id="stop">Termina</button>
 </div>
-<script>
-  window.agent.onSessionInfo((info) => {
-    document.getElementById('txt').textContent =
-      (info.control ? 'Controllo remoto attivo' : 'Condivisione schermo attiva') +
-      ' · ' + (info.viewerName || 'Operatore');
-  });
-  document.getElementById('stop').onclick = () => window.agent.forceStop();
-</script>
+<script src="./banner.js"></script>
 </body>
 </html>

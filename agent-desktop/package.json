@@ -1,6 +1,6 @@
 {
   "name": "yondesk-agent",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "Yondesk agent desktop (Windows, macOS, Linux)",
   "main": "src/main.js",
   "author": "Simone Scaffidi Domianello <info@simonescaffidi.it>",
@@ -14,7 +14,9 @@
     "dist": "electron-builder --config electron-builder.config.js --publish never",
     "dist:win": "electron-builder --config electron-builder.config.js --win --publish never",
     "dist:mac": "electron-builder --config electron-builder.config.js --mac --publish never",
-    "dist:linux": "electron-builder --config electron-builder.config.js --linux --publish never"
+    "dist:linux": "electron-builder --config electron-builder.config.js --linux --publish never",
+    "test:e2e": "node test/e2e/run.js",
+    "pack": "electron-builder --config electron-builder.config.js --dir --publish never"
   },
   "dependencies": {
     "electron-store": "^8.2.0",
@@ -23,10 +25,14 @@
   "optionalDependencies": {
     "@nut-tree-fork/nut-js": "^4.2.0"
   },
-  "repository": { "type": "git", "url": "https://github.com/simonescaffidi/yondesk.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/simonescaffidi/yondesk.git"
+  },
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
     "electron": "^31.7.7",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "playwright-core": "^1.49.1"
   }
 }

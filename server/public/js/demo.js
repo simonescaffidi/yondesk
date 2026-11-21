@@ -31,7 +31,7 @@
       setStatus({ offline: t('host_offline'), blocked: t('too_many'), self: t('err_self') }[m.code] || t('error'));
     });
     sig.on('hangup', function () { endSession(t('session_ended')); });
-    sig.on('signal', function (m) { if (peer) peer.onSignal(m.data); });
+    sig.on('signal', function (m) { if (peer && m.sessionId === peer.sessionId) peer.onSignal(m.data); });
   }
 
   /* ---------- HOST ---------- */
@@ -61,20 +61,27 @@
     if (!pendingReq) return;
     var m = pendingReq; pendingReq = null;
     if (!ok) { sig.send({ type: 'reject', sessionId: m.sessionId, reason: 'declined' }); return; }
-    sig.send({ type: 'accept', sessionId: m.sessionId, mode: mode });
     startHost(m.sessionId, mode);
   }
 
   async function startHost(sessionId, mode) {
+    // Ordine importante: prima la cattura (il browser chiede quale schermo condividere) e il peer,
+    // POI "accept": l'offerta dell'operatore parte appena riceve "accepted" e deve trovare un peer pronto.
     try {
       localStream = await navigator.mediaDevices.getDisplayMedia({
         video: { frameRate: 30 }, audio: false
       });
-    } catch (e) { endSession(t('share_denied')); sig.send({ type: 'hangup', sessionId: sessionId }); return; }
+    } catch (e) { sig.send({ type: 'reject', sessionId: sessionId, reason: 'capture' }); endSession(t('share_denied')); return; }
 
     localStream.getVideoTracks()[0].addEventListener('ended', function () { hangup(); });
     peer = new TA.Peer(sig, sessionId, /*polite*/ true, ice);
     wirePeer(peer, 'host', mode);
+    // l'host apre i canali dati: l'operatore risponde soltanto (niente offerte incrociate)
+    peer.createChannel('ctrl', { ordered: true });
+    peer.createChannel('chat', { ordered: true });
+    fileTx = new TA.FileTransfer(peer.createChannel('file', { ordered: true }));
+    bindFileTx();
+    sig.send({ type: 'accept', sessionId: sessionId, mode: mode });
     await peer.addStream(localStream, $('#quality') ? $('#quality').value : 'balanced');
     showStage(true);
     banner(t('banner_sharing'));
@@ -94,11 +101,7 @@
   function startViewer(sessionId, mode) {
     peer = new TA.Peer(sig, sessionId, /*polite*/ false, ice);
     wirePeer(peer, 'viewer', mode);
-    // il viewer crea i data channel; il video arriva come track dall'host
-    peer.createChannel('ctrl', { ordered: true });
-    peer.createChannel('chat', { ordered: true });
-    fileTx = new TA.FileTransfer(peer.createChannel('file', { ordered: true }));
-    bindFileTx();
+    // video e canali dati arrivano dall'host (vedi wirePeer -> 'channel')
     showStage(false);
     setStatus(t('in_session'), true);
   }
@@ -111,7 +114,7 @@
     });
     p.on('channel', function (ch) {
       if (ch.label === 'chat') { /* pronto */ }
-      if (ch.label === 'file' && as === 'host') { fileTx = new TA.FileTransfer(ch); bindFileTx(); }
+      if (ch.label === 'file' && as === 'viewer') { fileTx = new TA.FileTransfer(ch); bindFileTx(); }
     });
     p.on('data:chat', function (data) { addChat(JSON.parse(data).text, 'them'); });
     p.on('data:ctrl', function (data) { handleCtrl(JSON.parse(data), as); });

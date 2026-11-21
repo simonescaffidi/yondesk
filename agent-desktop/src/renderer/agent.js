@@ -8,6 +8,7 @@
   const $ = (s) => document.querySelector(s);
   let cfg, sig, ice, peer = null, stream = null, sessionPass = '', mode = 'view';
   let pendingReq = null;
+  let accepting = null; // sessione in fase di avvio (cattura schermo in corso)
 
   function setStatus(t, on) { const s = $('#status'); s.querySelector('span:last-child').textContent = t; s.classList.toggle('on', !!on); }
 
@@ -32,12 +33,18 @@
     sig.on('close', () => setStatus('Riconnessione…'));
     sig.on('registered', (m) => { cfg.id = m.id; $('#id').textContent = TA.formatId(m.id); });
     sig.on('incoming', onIncoming);
-    sig.on('signal', (m) => { if (peer) peer.onSignal(m.data); });
-    sig.on('hangup', () => endSession());
+    sig.on('signal', (m) => { if (peer && m.sessionId === peer.sessionId) peer.onSignal(m.data); });
+    sig.on('hangup', (m) => {
+      // richiesta scaduta o annullata prima della risposta: chiudi il consenso
+      if (pendingReq && (!m.sessionId || m.sessionId === pendingReq.sessionId)) { pendingReq = null; if ($('#consent').open) $('#consent').close(); }
+      if (accepting && (!m.sessionId || m.sessionId === accepting)) { accepting = null; return; }
+      if (peer && (!m.sessionId || m.sessionId === peer.sessionId)) endSession();
+    });
+    sig.on('replaced', () => setStatus('Yondesk è aperto in un\'altra finestra su questo dispositivo'));
   }
 
   function register() {
-    sig.send({ type: 'register', name: cfg.name, platform: process.platform, deviceKey: cfg.deviceKey,
+    sig.send({ type: 'register', name: cfg.name, platform: window.agent.platform, deviceKey: cfg.deviceKey,
       unattended: $('#unatt').checked });
   }
 
@@ -50,11 +57,13 @@
     }
     if (!ok) { sig.send({ type: 'reject', sessionId: m.sessionId, reason: 'auth' }); return; }
 
-    if (auto) { accept(m, 'control'); return; } // non presidiato: nessuna conferma, ma banner sempre visibile
+    if (auto) { if (peer || accepting) { sig.send({ type: 'reject', sessionId: m.sessionId, reason: 'busy' }); return; } accept(m, 'control'); return; } // non presidiato: nessuna conferma, ma banner sempre visibile
     // 2) consenso esplicito (presidiato)
+    if (peer || pendingReq || accepting) { sig.send({ type: 'reject', sessionId: m.sessionId, reason: 'busy' }); return; } // una sessione alla volta
     pendingReq = m;
     $('#who').textContent = m.viewerName || 'Un operatore';
-    $('#consent').showModal();
+    window.agent.attention();
+    if (!$('#consent').open) $('#consent').showModal();
   }
 
   function bindConsent() {
@@ -65,13 +74,24 @@
 
   async function accept(m, md) {
     mode = md;
-    sig.send({ type: 'accept', sessionId: m.sessionId, mode: md });
+    accepting = m.sessionId;
+    // Ordine importante: prima cattura e peer, POI "accept". Così l'offerta dell'operatore
+    // (che parte appena riceve "accepted") trova sempre un peer pronto a riceverla.
     try { stream = await captureScreen(); }
-    catch (e) { sig.send({ type: 'hangup', sessionId: m.sessionId }); setStatus('Cattura schermo negata'); return; }
-
+    catch (e) {
+      console.error('cattura schermo:', e && e.message);
+      sig.send({ type: 'reject', sessionId: m.sessionId, reason: 'capture' });
+      accepting = null;
+      setStatus('Cattura schermo negata'); refreshPermissions(); return;
+    }
+    // l'operatore ha rinunciato mentre il sistema chiedeva il permesso di cattura
+    if (accepting !== m.sessionId) { stream.getTracks().forEach(t => t.stop()); stream = null; return; }
+    accepting = null;
     peer = new TA.Peer(sig, m.sessionId, /*polite*/ true, ice);
     peer.on('data:ctrl', (data) => { if (mode === 'control') handleInput(JSON.parse(data)); });
     peer.on('closed', () => endSession());
+    peer.createChannel('ctrl', { ordered: true }); // l'host apre i canali: l'operatore risponde soltanto
+    sig.send({ type: 'accept', sessionId: m.sessionId, mode: md });
     await peer.addStream(stream, 'balanced');
 
     window.agent.sessionStart({ viewerName: m.viewerName || 'Operatore', mode: md });
@@ -82,6 +102,7 @@
   async function captureScreen() {
     const sources = await window.agent.listSources();
     const id = (sources[0] && sources[0].id);
+    if (!id) throw new Error('nessuno schermo disponibile');
     return navigator.mediaDevices.getUserMedia({
       audio: false,
       video: { mandatory: { chromeMediaSource: 'desktop', chromeMediaSourceId: id, maxFrameRate: 30 } }
@@ -89,6 +110,17 @@
   }
 
   function handleInput(ev) { window.agent.sendInput(ev); }
+
+  // macOS: senza "Registrazione schermo" il video è nero, senza "Accessibilità" il controllo non funziona
+  async function refreshPermissions() {
+    const p = await window.agent.permissions();
+    const need = [];
+    if (p.platform === 'darwin' && p.screen !== 'granted') need.push('screen');
+    if (p.platform === 'darwin' && !p.accessibility) need.push('accessibility');
+    $('#perm').style.display = need.length ? 'block' : 'none';
+    $('#perm-screen').style.display = need.includes('screen') ? 'block' : 'none';
+    $('#perm-acc').style.display = need.includes('accessibility') ? 'block' : 'none';
+  }
 
   function endSession() {
     if (peer) { peer.close(); peer = null; }
@@ -131,6 +163,11 @@
       if (id.length < 6 || !pass) { $('#op-connect').textContent = 'Inserisci ID e password'; setTimeout(() => $('#op-connect').textContent = 'Connetti', 1500); return; }
       window.agent.openViewer({ id, pass, name: cfg ? cfg.name : 'Operatore' });
     };
+
+    $('#perm-screen-btn').onclick = () => window.agent.openPermission('screen');
+    $('#perm-acc-btn').onclick = () => window.agent.openPermission('accessibility');
+    window.addEventListener('focus', refreshPermissions);
+    refreshPermissions();
 
     boot();
   });

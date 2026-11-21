@@ -146,9 +146,11 @@ function attachSignaling(server) {
         case 'reject': {
           const s = sessions.get(m.sessionId);
           if (!s || s.host !== ws) return;
-          if (m.reason === 'auth') recordFailure(s.hostId);
-          endSession(m.sessionId, m.reason === 'auth' ? 'auth' : 'rejected', ws);
-          send(s.viewer, { type: 'rejected', sessionId: m.sessionId, reason: m.reason === 'auth' ? 'auth' : 'rejected' });
+          // motivi ammessi verso l'operatore; qualsiasi altro valore diventa "rejected"
+          const reason = ['auth', 'busy', 'capture'].includes(m.reason) ? m.reason : 'rejected';
+          if (reason === 'auth') recordFailure(s.hostId);
+          endSession(m.sessionId, reason, ws);
+          send(s.viewer, { type: 'rejected', sessionId: m.sessionId, reason });
           break;
         }
 

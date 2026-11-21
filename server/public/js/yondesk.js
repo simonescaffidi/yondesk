@@ -109,6 +109,9 @@
   /*
    * Peer: wrapper RTCPeerConnection condiviso da host e viewer.
    * Canali dati: "ctrl" (eventi input/comandi), "chat", "file".
+   * Regola di protocollo: è SEMPRE l'host (dispositivo assistito) ad aggiungere video e canali
+   * dati, quindi a fare l'offerta; l'operatore risponde soltanto. Così le offerte non si incrociano.
+   * La "perfect negotiation" qui sotto resta come rete di sicurezza.
    */
   class Peer extends Emitter {
     constructor(sig, sessionId, polite, ice) {
@@ -120,8 +123,13 @@
       this.pc.onicecandidate = ({ candidate }) => { if (candidate) this._sig({ candidate }); };
       this.pc.ontrack = (e) => this.emit('track', e.streams[0] || new MediaStream([e.track]));
       this.pc.onconnectionstatechange = () => {
-        this.emit('state', this.pc.connectionState);
-        if (['failed', 'closed', 'disconnected'].includes(this.pc.connectionState)) this.emit('closed');
+        const st = this.pc.connectionState;
+        console.debug('[yondesk] connessione', st);
+        this.emit('state', st);
+        clearTimeout(this._dt);
+        if (st === 'failed' || st === 'closed') this.emit('closed');
+        // rete instabile: aspetta qualche secondo prima di dichiarare chiusa la sessione
+        else if (st === 'disconnected') this._dt = setTimeout(() => { if (this.pc.connectionState === 'disconnected') this.emit('closed'); }, 8000);
       };
       this.pc.ondatachannel = (e) => this._bind(e.channel);
       this.pc.onnegotiationneeded = async () => {
@@ -132,7 +140,10 @@
     createChannel(label, opts) { const ch = this.pc.createDataChannel(label, opts); this._bind(ch); return ch; }
     _bind(ch) {
       this.channels[ch.label] = ch;
-      ch.onopen = () => this.emit('channel', ch);
+      let announced = false;
+      const open = () => { if (!announced) { announced = true; this.emit('channel', ch); } };
+      ch.onopen = open;
+      if (ch.readyState === 'open') queueMicrotask(open); // canale ricevuto già aperto
       ch.onmessage = (e) => this.emit('data:' + ch.label, e.data, ch);
     }
     _sig(data) { this.sig.send({ type: 'signal', sessionId: this.sessionId, data }); }
@@ -141,6 +152,7 @@
         if (description) {
           const offerCollision = description.type === 'offer' && (this.makingOffer || this.pc.signalingState !== 'stable');
           this.ignoreOffer = !this.polite && offerCollision;
+          if (offerCollision) console.debug('[yondesk] offerte incrociate:', this.polite ? 'cedo (rollback)' : 'ignoro quella remota');
           if (this.ignoreOffer) return;
           await this.pc.setRemoteDescription(description);
           if (description.type === 'offer') { await this.pc.setLocalDescription(); this._sig({ description: this.pc.localDescription }); }
@@ -158,7 +170,7 @@
         }
       }
     }
-    close() { try { Object.values(this.channels).forEach(c => c.close()); this.pc.close(); } catch {} }
+    close() { clearTimeout(this._dt); try { Object.values(this.channels).forEach(c => c.close()); this.pc.close(); } catch {} }
   }
 
   global.Yondesk = {
