@@ -20,7 +20,8 @@ const macExtra = signed
       hardenedRuntime: true,
       entitlements: 'resources/entitlements.mac.plist',
       entitlementsInherit: 'resources/entitlements.mac.plist',
-      notarize: { teamId: process.env.APPLE_TEAM_ID }
+      // con la chiave API il team non va indicato (lo ricava la chiave): @electron/notarize rifiuta le due cose insieme
+      notarize: true
     }
   : { hardenedRuntime: false };
 
