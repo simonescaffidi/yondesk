@@ -1,7 +1,7 @@
 # Scheda Google Play di Yondesk
 
 Pacchetto `it.simonescaffidi.yondesk`. Lingua predefinita: italiano. Categoria: Strumenti. App gratuita, senza annunci.
-Grafiche in questa cartella: `icon-512.png`, `feature-graphic-1024x500.png`, `screenshot-*.png` (900x1600, presi da una sessione reale).
+Grafiche in questa cartella: `icon-512.png`, `feature-graphic-1024x500.png`, `screenshot-*.png` (1-3 a 900x1600 dall'app in sessione reale, 4-5 a 1080x2160 dall'emulatore Android 14).
 
 ## Italiano (it-IT)
 
@@ -67,5 +67,5 @@ IT consultants, help desks, and anyone who needs to help a relative or a colleag
 - **Classificazione dei contenuti**: utilità, nessun contenuto sensibile, nessuna interazione tra sconosciuti (serve ID e password dati a voce).
 - **Pubblico di destinazione**: 18+.
 - **Sicurezza dei dati**: nessun dato raccolto o condiviso con terzi; i dati in transito sono cifrati. L'identificativo del dispositivo generato dall'app serve solo a instradare la sessione e non è associato a una persona.
-- **Servizio in primo piano (FOREGROUND_SERVICE_MEDIA_PROJECTION)**: usato solo mentre l'utente condivide lo schermo dopo aver accettato la richiesta dell'operatore e la finestra di sistema di Android; la notifica resta visibile e la condivisione si chiude con Termina. Serve un video dimostrativo.
+- **Servizio in primo piano (FOREGROUND_SERVICE_MEDIA_PROJECTION)**: usato solo mentre l'utente condivide lo schermo dopo aver accettato la richiesta dell'operatore e la finestra di sistema di Android; la notifica resta visibile e la condivisione si chiude con Termina. Video dimostrativo: https://yondesk.com/video/condivisione-android.mp4 (ID e password, finestra di sistema di Android, condivisione attiva con barra rossa, chiusura), composto dalle istantanee della prova su emulatore.
 - **App di notizie, salute, finanza, governo**: no.
