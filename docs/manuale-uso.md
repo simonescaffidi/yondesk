@@ -35,6 +35,14 @@ Messaggi che puoi vedere: *Password errata*, *Dispositivo non in linea*, *Richie
 ### Primo avvio su macOS
 L'app è firmata e verificata da Apple (notarizzata): trascina **Yondesk** in *Applicazioni* e aprila con un doppio clic. macOS chiede solo conferma perché è scaricata da internet.
 
+### Disinstallazione
+- **Windows**: Impostazioni → App → App installate → Yondesk → Disinstalla. La Portable si elimina cancellando il file.
+- **macOS**: trascina Yondesk da *Applicazioni* nel Cestino.
+- **Linux**: `sudo apt remove yondesk`; l'AppImage si elimina cancellando il file.
+- **Android**: tieni premuta l'icona → Disinstalla.
+
+Chi firma i programmi e cosa trasmette l'app: pagina **Code signing policy** del sito (`/it/firma-del-codice.html`).
+
 ### Primo avvio su Windows (app non ancora firmata)
 L'app non è ancora firmata, quindi **SmartScreen** può mostrare un avviso blu ("Windows ha protetto il PC"). Non è un virus. Per aprirla: **Ulteriori informazioni → Esegui comunque**. Consiglio: usa la versione **Portable**, che gira senza installare nulla.
 

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="it" data-ga4="{{GA4_ID}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Code signing policy (firma del codice) — Yondesk</title>
+<meta name="description" content="Come vengono firmati i programmi Yondesk, chi può approvare una release e quali dati trasmette l'app.">
+<link rel="canonical" href="{{SITE_URL}}/it/firma-del-codice.html">
+<link rel="alternate" hreflang="it" href="{{SITE_URL}}/it/firma-del-codice.html">
+<link rel="alternate" hreflang="en" href="{{SITE_URL}}/en/code-signing-policy.html">
+<meta name="robots" content="index,follow">
+<!--GSC-->
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<!--#HEADER#-->
+<main id="main" class="container" style="padding-top:2rem">
+<div class="legal">
+<h1>Code signing policy</h1>
+<p>Questa pagina descrive come vengono firmati i programmi Yondesk, chi ne è responsabile e cosa fa l'app sul tuo dispositivo. Yondesk è software libero con licenza <a href="https://github.com/simonescaffidi/yondesk/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT</a>: tutto il codice è pubblico su <a href="https://github.com/simonescaffidi/yondesk" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+
+<h2>Firma dei programmi</h2>
+<ul>
+<li><strong>Windows</strong>: Free code signing provided by <a href="https://signpath.io" target="_blank" rel="noopener noreferrer">SignPath.io</a>, certificate by <a href="https://signpath.org" target="_blank" rel="noopener noreferrer">SignPath Foundation</a>.</li>
+<li><strong>macOS</strong>: firma Developer ID e notarizzazione Apple (SCAFFIDI DOMIANELLO SIMONE, team 323D574J2W).</li>
+<li><strong>Android</strong>: APK firmato con la chiave di rilascio del progetto.</li>
+</ul>
+<p>I programmi firmati sono costruiti solo da GitHub Actions a partire dal codice del repository pubblico, mai da un computer personale. Una release parte solo se le prove automatiche (sessioni reali su Windows, macOS, Linux, Android e iOS) sono superate per lo stesso commit, e ogni firma richiede un'approvazione manuale.</p>
+
+<h2>Ruoli</h2>
+<ul>
+<li><strong>Autori e revisori</strong>: <a href="https://github.com/simonescaffidi" target="_blank" rel="noopener noreferrer">Simone Scaffidi Domianello (@simonescaffidi)</a>, proprietario del repository. Ogni modifica proposta da altri passa da una pull request revisionata da lui.</li>
+<li><strong>Approvatori delle release</strong>: <a href="https://github.com/simonescaffidi" target="_blank" rel="noopener noreferrer">Simone Scaffidi Domianello (@simonescaffidi)</a>.</li>
+</ul>
+<p>L'accesso a GitHub e a SignPath è protetto da autenticazione a due fattori.</p>
+
+<h2>Privacy</h2>
+<p>Questo programma non trasferisce informazioni ad altri sistemi in rete se non su richiesta specifica dell'utente o di chi lo installa o lo gestisce. Quando avvii l'app, questa si collega al server di collegamento di Yondesk per ricevere un ID e mettere in contatto i due dispositivi; schermo, file, chat e comandi viaggiano cifrati da un capo all'altro e il server non può leggerli. Se le due reti non si vedono direttamente, il traffico cifrato passa da un relay di Yondesk. Dettagli nella <a href="/it/privacy-policy.html">Privacy Policy</a>.</p>
+
+<h2>Cosa fa l'app sul dispositivo</h2>
+<ul>
+<li>Nessuna sessione parte senza consenso: l'assistito deve accettare ogni richiesta, e per tutta la sessione resta visibile un avviso.</li>
+<li>L'accesso non presidiato è spento. Si attiva solo dalle impostazioni, con una password dedicata, e mostra sempre un indicatore.</li>
+<li>L'app non modifica la configurazione del sistema. Su macOS chiede i permessi <em>Registrazione schermo</em> e <em>Accessibilità</em> tramite le finestre di sistema.</li>
+</ul>
+
+<h2>Disinstallazione</h2>
+<ul>
+<li><strong>Windows</strong>: Impostazioni → App → App installate → Yondesk → Disinstalla. La versione Portable si elimina cancellando il file.</li>
+<li><strong>macOS</strong>: trascina Yondesk dalla cartella Applicazioni nel Cestino.</li>
+<li><strong>Linux</strong>: <code>sudo apt remove yondesk</code>; l'AppImage si elimina cancellando il file.</li>
+<li><strong>Android</strong>: tieni premuta l'icona → Disinstalla.</li>
+</ul>
+
+<h2>Segnalazioni</h2>
+<p>Per segnalare un problema di sicurezza o un file firmato sospetto scrivi a <a href="mailto:info@simonescaffidi.it">info@simonescaffidi.it</a>.</p>
+</div>
+</main>
+<!--#FOOTER#-->
+<!--#COOKIE#-->
+<script src="/js/site.js"></script>
+</body>
+</html>

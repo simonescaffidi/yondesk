@@ -93,3 +93,11 @@ Su Linux senza display: `xvfb-run -a -s "-screen 0 1280x800x24" <comando>`.
 
 ---
 Powered by [www.simonescaffidi.it](https://www.simonescaffidi.it)
+
+## Code signing policy
+
+- Windows: Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+- macOS: Developer ID signature and Apple notarization. Android: APK signed with the project's release key.
+- Committers and reviewers: [@simonescaffidi](https://github.com/simonescaffidi) (repository owner). Approvers: [@simonescaffidi](https://github.com/simonescaffidi).
+- Signed binaries are built only by GitHub Actions from this repository, after the `Test app` workflow is green for the same commit.
+- Privacy: this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. See the [privacy policy](https://yondesk.com/en/privacy-policy.html) and the full [code signing policy](https://yondesk.com/en/code-signing-policy.html).
