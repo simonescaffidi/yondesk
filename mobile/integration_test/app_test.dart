@@ -105,5 +105,10 @@ void main() {
     await until(t, () => statusOf(t) == 'Stai condividendo lo schermo', 'condivisione avviata', seconds: 90);
     // l'operatore di prova chiude quando ha ricevuto il video
     await until(t, () => has(const Key('startShare')) && !has(const Key('status')), 'fine sessione da parte dell\'operatore', seconds: 120);
-  }, skip: !hostMode);
+    // lo script che tocca la finestra di sistema legge lo schermo via accessibilità: Android la lascia attiva
+    // per qualche secondo e il framework di test la conterebbe come risorsa non rilasciata
+    for (var i = 0; i < 120 && t.binding.debugOutstandingSemanticsHandles > 0; i++) {
+      await t.pump(const Duration(milliseconds: 500));
+    }
+  }, skip: !hostMode, semanticsEnabled: false);
 }
