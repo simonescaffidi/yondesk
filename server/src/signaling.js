@@ -21,28 +21,37 @@ const PENDING_TIMEOUT_MS = 60 * 1000;
 const hosts = new Map();      // id -> { ws, name, platform, unattended }
 const sessions = new Map();   // sessionId -> { host, viewer, hostId, accepted, timer }
 const failures = new Map();   // id -> { times: [], blockedUntil }
-let deviceIds = {};           // sha256(deviceKey) -> id
+let deviceIds = {};           // sha256(deviceKey) -> id (solo ID assegnati in passato o impostati a mano)
+const derived = new Map();    // id -> sha256(deviceKey) degli ID calcolati in questa esecuzione
 
-try { deviceIds = JSON.parse(fs.readFileSync(DEVICES_FILE, 'utf8')); } catch { /* primo avvio */ }
-function saveDevices() {
-  try {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(DEVICES_FILE, JSON.stringify(deviceIds));
-  } catch (e) { console.error('Impossibile salvare devices.json', e.message); }
-}
+try { deviceIds = JSON.parse(fs.readFileSync(DEVICES_FILE, 'utf8')); } catch { /* nessun file: ID calcolati dalla chiave */ }
 
 function newId() {
   const used = new Set(Object.values(deviceIds));
   let id;
-  do { id = String(crypto.randomInt(100000000, 999999999)); } while (used.has(id) || hosts.has(id));
+  do { id = String(crypto.randomInt(100000000, 999999999)); } while (used.has(id) || derived.has(id) || hosts.has(id));
   return id;
 }
 
+/*
+ * L'ID di un dispositivo si calcola dalla sua chiave: resta lo stesso dopo riavvii e nuovi deploy
+ * del server, senza bisogno di salvare nulla. Se due chiavi diverse danno lo stesso ID (raro),
+ * la seconda passa al valore successivo della serie.
+ */
 function idForKey(deviceKey) {
   if (!deviceKey || typeof deviceKey !== 'string' || deviceKey.length < 16) return newId();
   const h = crypto.createHash('sha256').update(deviceKey).digest('hex');
-  if (!deviceIds[h]) { deviceIds[h] = newId(); saveDevices(); }
-  return deviceIds[h];
+  if (deviceIds[h]) return deviceIds[h];
+  const reserved = new Set(Object.values(deviceIds));
+  for (let n = 0; n < 1000; n++) {
+    const d = crypto.createHash('sha256').update(h + ':' + n).digest('hex');
+    const id = String(100000000 + Number(BigInt('0x' + d.slice(0, 15)) % 900000000n));
+    const owner = derived.get(id);
+    if (reserved.has(id) || (owner && owner !== h)) continue;
+    derived.set(id, h);
+    return id;
+  }
+  return newId();
 }
 
 function send(ws, msg) {
@@ -198,4 +207,4 @@ function stats() {
   return { hostsOnline: hosts.size, activeSessions: sessions.size };
 }
 
-module.exports = { attachSignaling, stats };
+module.exports = { attachSignaling, stats, idForKey };

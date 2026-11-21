@@ -87,7 +87,7 @@ Su iPhone e iPad l'app funziona come operatore; la condivisione dello schermo de
 | Su macOS l'operatore vede ma non controlla | Manca il permesso *Accessibilità*. |
 | L'AppImage non parte su Linux | Installa `libfuse2` e rendi eseguibile il file. |
 | Android non avvia la condivisione | Nella finestra di sistema scegli *Tutto lo schermo*; se rifiuti, l'operatore vede "non può condividere lo schermo". |
-| Connessione non parte dietro NAT severo | Configurare un server **TURN** (variabili `TURN_*`). |
+| Reti aziendali o mobili che bloccano il collegamento diretto | Nessuna azione: la sessione passa in automatico dal relay di Yondesk, sempre cifrata da un capo all'altro. Può risultare un po' meno fluida. |
 | Password errata ripetuta → blocco | Attendere qualche minuto e riprovare. |
 
 ---
