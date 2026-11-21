@@ -1,0 +1,184 @@
+name: Test app
+
+# Prove reali di tutte le app prima di ogni pubblicazione:
+#  - desktop pacchettizzato su Windows, macOS e Linux (due istanze: assistito + operatore)
+#  - client web e interoperabilità web ↔ desktop
+#  - app mobile: logica operatore (build Linux), Android su emulatore, iOS su simulatore
+on:
+  push:
+    branches: ['main', 'fix/**']
+    paths: ['agent-desktop/**', 'mobile/**', 'server/**', '.github/workflows/**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: test-app-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.50.1'
+
+jobs:
+  server:
+    name: Server (signaling)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci && npm test
+        working-directory: server
+
+  desktop:
+    name: Desktop ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, name: Linux, bin: 'dist/linux-unpacked/yondesk' }
+          - { os: windows-latest, name: Windows, bin: 'dist/win-unpacked/Yondesk.exe' }
+          - { os: macos-latest, name: macOS, bin: 'dist/mac-arm64/Yondesk.app/Contents/MacOS/Yondesk' }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Dipendenze
+        shell: bash
+        run: |
+          (cd server && npm ci)
+          (cd agent-desktop && npm ci)
+      - name: Test unitari
+        working-directory: agent-desktop
+        run: npm test
+      - name: Pacchettizza l'app (come quella distribuita)
+        working-directory: agent-desktop
+        run: npm run pack
+      - name: Sessione reale tra due istanze dell'app
+        working-directory: agent-desktop
+        shell: bash
+        env:
+          YONDESK_APP_BIN: ${{ github.workspace }}/agent-desktop/${{ matrix.bin }}
+        run: |
+          ls -la "$(dirname "$YONDESK_APP_BIN")" | head -5
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run -a -s "-screen 0 1280x800x24" node test/e2e/run.js
+          else
+            node test/e2e/run.js
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-desktop-${{ matrix.name }}
+          path: agent-desktop/e2e-out/
+          retention-days: 7
+
+  web:
+    name: Client web e interoperabilità
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: (cd server && npm ci) && (cd agent-desktop && npm ci && npx playwright-core install --with-deps chromium)
+      - name: Browser ↔ browser e browser ↔ app desktop
+        working-directory: agent-desktop
+        run: xvfb-run -a -s "-screen 0 1280x800x24" node test/e2e/web.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: e2e-web, path: agent-desktop/e2e-out/, retention-days: 7 }
+
+  mobile-operatore:
+    name: App mobile, logica operatore (controllo reale di un desktop)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, flutter-version: '${{ env.FLUTTER_VERSION }}', cache: true }
+      - name: Dipendenze di sistema
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q clang cmake ninja-build pkg-config libgtk-3-dev pulseaudio libpulse-dev xvfb
+          (cd server && npm ci) && (cd agent-desktop && npm ci)
+      - name: Analisi statica
+        working-directory: mobile
+        run: flutter pub get && flutter analyze --no-fatal-infos
+      - name: L'app si collega all'app desktop, vede lo schermo, muove il mouse e scrive
+        working-directory: mobile
+        run: |
+          pulseaudio -D --exit-idle-time=-1 --load="module-null-sink sink_name=dummy" || true
+          xvfb-run -a -s "-screen 0 1280x800x24" bash tool/e2e_linux.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: e2e-mobile-operatore, path: agent-desktop/e2e-out/, retention-days: 7 }
+
+  android:
+    name: Android (emulatore, Android 14)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, flutter-version: '${{ env.FLUTTER_VERSION }}', cache: true }
+      - name: Dipendenze
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q xvfb
+          (cd server && npm ci) && (cd agent-desktop && npm ci && npx playwright-core install --with-deps chromium)
+          (cd mobile && flutter pub get)
+      - name: Accelerazione emulatore (KVM)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Telefono operatore + telefono assistito
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash mobile/tool/e2e_android.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: e2e-android, path: agent-desktop/e2e-out/, retention-days: 7 }
+
+  ios:
+    name: iOS (simulatore)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, flutter-version: '${{ env.FLUTTER_VERSION }}', cache: true }
+      - name: Dipendenze
+        run: |
+          (cd server && npm ci) && (cd agent-desktop && npm ci && npx playwright-core install chromium)
+          (cd mobile && flutter pub get)
+      - name: Avvia un simulatore iPhone
+        id: sim
+        run: |
+          xcodebuild -version
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; c=[(k,x) for k,v in d.items() if 'iOS' in k for x in v if 'iPhone' in x['name']]; c.sort(key=lambda t: t[0]); print(c[-1][1]['udid'])")
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+      - name: iPhone operatore verso un dispositivo remoto
+        run: bash mobile/tool/e2e_ios.sh "${{ steps.sim.outputs.udid }}"
+      - name: Build di rilascio iOS (senza firma)
+        working-directory: mobile
+        run: flutter build ios --release --no-codesign
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: e2e-ios, path: agent-desktop/e2e-out/, retention-days: 7 }

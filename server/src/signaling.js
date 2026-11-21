@@ -149,7 +149,9 @@ function attachSignaling(server) {
           // motivi ammessi verso l'operatore; qualsiasi altro valore diventa "rejected"
           const reason = ['auth', 'busy', 'capture'].includes(m.reason) ? m.reason : 'rejected';
           if (reason === 'auth') recordFailure(s.hostId);
-          endSession(m.sessionId, reason, ws);
+          // all'operatore arriva solo "rejected" (non anche "hangup"): così vede il motivo giusto
+          clearTimeout(s.timer);
+          sessions.delete(m.sessionId);
           send(s.viewer, { type: 'rejected', sessionId: m.sessionId, reason });
           break;
         }

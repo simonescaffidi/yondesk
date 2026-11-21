@@ -14,6 +14,10 @@ const crypto = require('crypto');
 const unattendedHash = require('./unattended-hash');
 let Store; try { Store = require('electron-store'); } catch { Store = null; }
 
+// Assistenza remota: i due dispositivi devono potersi raggiungere direttamente anche in rete locale.
+// Senza questo, Chromium nasconde gli indirizzi locali dietro nomi mDNS che telefoni e altri client non risolvono.
+app.commandLine.appendSwitch('disable-features', 'WebRtcHideLocalIpsWithMdns');
+
 if (!app.requestSingleInstanceLock()) { app.quit(); process.exit(0); }
 app.on('second-instance', () => showPanel());
 
