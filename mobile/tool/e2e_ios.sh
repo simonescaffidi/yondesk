@@ -4,6 +4,8 @@
 cd "$(dirname "$0")/.."
 OUT=../agent-desktop/e2e-out; mkdir -p $OUT; rm -f $OUT/peer.json
 UDID=${1:?UDID del simulatore}
+# la prima build Xcode (pod + WebRTC) dura oltre 10 minuti: il dispositivo remoto aspetta l'app fino a 30
+export E2E_PEER_TIMEOUT=${E2E_PEER_TIMEOUT:-1800}
 ( cd ../agent-desktop && node test/e2e/mobile-peer.js host-web ) & PEER=$!
 for i in $(seq 1 120); do [ -f $OUT/peer.json ] && break; sleep 1; done
 ID=$(node -p "require('$OUT/peer.json').id"); PASS=$(node -p "require('$OUT/peer.json').pass")
