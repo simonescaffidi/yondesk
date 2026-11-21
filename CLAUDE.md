@@ -22,3 +22,7 @@
 - Relay TURN: servizio Railway `turn` (cartella `turn/`, coturn solo TCP dietro TCP Proxy). `TURN_SECRET` uguale su `turn` e `yondesk`,
   `TURN_URLS` sul server. Prova: connessione con `iceTransportPolicy: 'relay'` usando `/api/ice`.
 - Railway: tutti i servizi in Europa (`europe-west4`).
+- iOS: il workflow `iOS su TestFlight` (`.github/workflows/ios-testflight.yml`) firma con la chiave API App Store Connect e carica la build su TestFlight;
+  aumenta il numero di build in `mobile/pubspec.yaml` a ogni caricamento.
+- Firma del codice: la pagina `Code signing policy` del sito (`firma-del-codice.html` / `code-signing-policy.html`) e la sezione del README
+  vanno tenute allineate a chi firma davvero (requisito SignPath Foundation).

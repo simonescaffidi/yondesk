@@ -1,0 +1,96 @@
+name: iOS su TestFlight
+
+# Compila l'app iOS firmata e la carica su App Store Connect (TestFlight).
+# Parte a mano o da un push su ci-release, e solo se "Test app" è verde per lo stesso commit
+# (se le prove sono ancora in corso le aspetta).
+on:
+  push:
+    branches: ['ci-release']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  FLUTTER_VERSION: '3.50.1'
+
+jobs:
+  test-verdi:
+    name: Test verdi per questo commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 120); do
+            ok=$(gh api "repos/${{ github.repository }}/actions/workflows/test-apps.yml/runs?head_sha=${{ github.sha }}&status=success" -q '.total_count')
+            [ "$ok" -ge 1 ] && { echo "Test app verde per ${{ github.sha }}"; exit 0; }
+            attivi=$(gh api "repos/${{ github.repository }}/actions/workflows/test-apps.yml/runs?head_sha=${{ github.sha }}" -q '[.workflow_runs[] | select(.status != "completed")] | length')
+            [ "$attivi" -ge 1 ] || break
+            echo "Test app in corso, attendo..."; sleep 30
+          done
+          echo "::error::I test delle app non sono verdi per questo commit: caricamento bloccato"; exit 1
+
+  ios:
+    needs: test-verdi
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: 'stable', flutter-version: '${{ env.FLUTTER_VERSION }}', cache: true }
+      - name: Chiave API App Store Connect
+        env:
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          [ -n "$APPLE_API_KEY_P8" ] || { echo "::error::Secret APPLE_API_KEY_P8 mancante"; exit 1; }
+          printf '%s\n' "$APPLE_API_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+      - name: Prepara il progetto (Flutter + pod)
+        working-directory: mobile
+        run: |
+          flutter pub get
+          flutter build ios --release --no-codesign
+      - name: Archivia con firma automatica
+        shell: bash
+        working-directory: mobile/ios
+        env:
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/Runner.xcarchive" archive \
+            DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER" \
+            | tail -40
+          test -d "$RUNNER_TEMP/Runner.xcarchive"
+      - name: Esporta e carica su App Store Connect
+        shell: bash
+        env:
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+          KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          cat > "$RUNNER_TEMP/export.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$TEAM</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Runner.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/export.plist" -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER" \
+            | tail -60
+      - name: Pulizia
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
