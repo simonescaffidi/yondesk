@@ -54,17 +54,21 @@ jobs:
         env:
           MAC_CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
           MAC_CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          if [ -n "$MAC_CSC_LINK" ]; then
+          if [ -n "$MAC_CSC_LINK" ] && [ -n "$APPLE_API_KEY_P8" ]; then
+            printf '%s\n' "$APPLE_API_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
             {
               echo "CSC_LINK=$MAC_CSC_LINK"
               echo "CSC_KEY_PASSWORD=$MAC_CSC_KEY_PASSWORD"
-              echo "APPLE_ID=$APPLE_ID"
-              echo "APPLE_APP_SPECIFIC_PASSWORD=$APPLE_APP_SPECIFIC_PASSWORD"
+              echo "APPLE_API_KEY=$RUNNER_TEMP/AuthKey.p8"
+              echo "APPLE_API_KEY_ID=$APPLE_API_KEY_ID"
+              echo "APPLE_API_ISSUER=$APPLE_API_ISSUER"
               echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"
+              echo "MAC_FIRMATA=1"
             } >> "$GITHUB_ENV"
             echo "macOS: firma Developer ID + notarizzazione ATTIVE"
           else
@@ -107,6 +111,14 @@ jobs:
             powershell -NoProfile -Command '$p = Start-Process -FilePath dist\Yondesk-Setup.exe -ArgumentList "/S" -Wait -PassThru; if ($p.ExitCode -ne 0) { throw "installer terminato con codice $($p.ExitCode)" }; $exe = Join-Path $env:ProgramFiles "Yondesk\Yondesk.exe"; if (!(Test-Path $exe)) { throw "Yondesk.exe non installato in $exe" }; $lnk = Join-Path $env:ProgramData "Microsoft\Windows\Start Menu\Programs\Yondesk.lnk"; if (!(Test-Path $lnk)) { throw "collegamento nel menu Start non creato" }; Write-Host "installato: $exe, collegamento: $lnk"'
             echo "YONDESK_APP_BIN=$PROGRAMFILES/Yondesk/Yondesk.exe" >> "$GITHUB_ENV"
           fi
+      - name: Verifica firma e notarizzazione (come Gatekeeper sul Mac di un utente)
+        if: runner.os == 'macOS' && env.MAC_FIRMATA == '1'
+        run: |
+          APP="$RUNNER_TEMP/Yondesk.app"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          codesign -dv "$APP" 2>&1 | grep -E "Authority|TeamIdentifier|flags"
+          xcrun stapler validate "$APP"
+          spctl -a -vv -t exec "$APP"
       - name: Sessione reale tra due istanze dell'app installata
         working-directory: agent-desktop
         shell: bash

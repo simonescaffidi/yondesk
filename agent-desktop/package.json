@@ -1,6 +1,6 @@
 {
   "name": "yondesk-agent",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Yondesk agent desktop (Windows, macOS, Linux)",
   "main": "src/main.js",
   "author": "Simone Scaffidi Domianello <info@simonescaffidi.it>",
