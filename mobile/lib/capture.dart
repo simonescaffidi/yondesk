@@ -13,6 +13,19 @@ class ScreenCapture {
       final granted = await Helper.requestCapturePermission();
       if (!granted) throw Exception('consenso alla cattura negato');
       await _enableForeground();
+      // Il servizio entra in primo piano poco dopo la richiesta di avvio: finché non lo è,
+      // Android rifiuta la cattura. Si attende e si riprova per qualche secondo.
+      Object? last;
+      for (var i = 0; i < 8; i++) {
+        await Future<void>.delayed(Duration(milliseconds: i == 0 ? 700 : 500));
+        try {
+          return await navigator.mediaDevices.getDisplayMedia({'video': true, 'audio': false});
+        } catch (e) {
+          last = e;
+          if (!'$e'.toLowerCase().contains('foreground service')) rethrow;
+        }
+      }
+      throw Exception('cattura non avviata: $last');
     }
     return navigator.mediaDevices.getDisplayMedia({'video': true, 'audio': false});
   }
@@ -23,7 +36,7 @@ class ScreenCapture {
       notificationText: 'Stai condividendo lo schermo in una sessione di assistenza',
       notificationImportance: AndroidNotificationImportance.normal,
       notificationIcon: AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
-      enableWifiLock: true,
+      enableWifiLock: false,
       showBadge: false,
       shouldRequestBatteryOptimizationsOff: false,
     );

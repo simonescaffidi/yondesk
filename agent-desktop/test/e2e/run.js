@@ -282,9 +282,9 @@ async function main() {
       if (!controlOk) throw new Error('controllo input non disponibile');
       // finestra di prova sull'assistito con un campo di testo a fuoco
       await host.app.evaluate(async ({ BrowserWindow }) => {
-        const w = new BrowserWindow({ width: 500, height: 200, x: 40, y: 120, title: 'e2e-input' });
+        const w = new BrowserWindow({ width: 500, height: 200, x: 40, y: 120, title: 'e2e-input', alwaysOnTop: true });
         await w.loadURL('data:text/html,<input id="t" autofocus style="width:90%;font-size:24px">');
-        w.show(); w.focus(); w.webContents.focus();
+        w.setAlwaysOnTop(true, 'screen-saver'); w.show(); w.moveTop(); w.focus(); w.webContents.focus();
         global.__e2eInput = w;
       });
       await sleep(800);
@@ -297,7 +297,13 @@ async function main() {
       await viewer.keyboard.type('ciao123', { delay: 60 });
       await viewer.keyboard.press('Backspace');
       const val = await waitFor(() => host.app.evaluate(() => global.__e2eInput.webContents.executeJavaScript('document.getElementById("t").value')).then(v => v === 'ciao12' ? v : null), 'testo digitato da remoto', 8000)
-        .catch(async () => { throw new Error('testo ricevuto: ' + JSON.stringify(await host.app.evaluate(() => global.__e2eInput.webContents.executeJavaScript('document.getElementById("t").value')))); });
+        .catch(async () => {
+          const diag = await host.app.evaluate(async ({ BrowserWindow }) => {
+            const w = global.__e2eInput; const f = BrowserWindow.getFocusedWindow();
+            return { testo: await w.webContents.executeJavaScript('document.getElementById("t").value'), finestraAFuoco: f ? f.getTitle() : null, campoAttivo: await w.webContents.executeJavaScript('document.activeElement && document.activeElement.id'), bounds: w.getBounds(), visibile: w.isVisible() };
+          });
+          throw new Error('testo non arrivato: ' + JSON.stringify(diag) + ' · cursore ' + JSON.stringify(await cursor(host)));
+        });
       await host.app.evaluate(() => { global.__e2eInput.destroy(); });
       return `digitato "${val}" sul dispositivo remoto`;
     }, { optional: process.platform === 'darwin' });

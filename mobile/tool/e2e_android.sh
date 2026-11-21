@@ -33,6 +33,6 @@ flutter test integration_test/app_test.dart -d $DEV \
 A=$?; wait $PEER; R=$?; kill $TAPPER 2>/dev/null
 cat $OUT/tap-dialog.log
 echo "assistito: app=$A dispositivo remoto=$R"; [ $A -eq 0 ] && [ $R -eq 0 ] || FAIL=1
-adb -s $DEV logcat -d -t 400 > $OUT/logcat.txt 2>/dev/null || true
+adb -s $DEV logcat -d -t 6000 2>/dev/null | grep -iE "yondesk|flutter|IsolateHolder|MediaProjection|AndroidRuntime|ForegroundService|FGS|SecurityException" | tail -400 > $OUT/logcat.txt || true
 echo "::endgroup::"
 exit $FAIL
