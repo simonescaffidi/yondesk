@@ -32,8 +32,8 @@ L'app resta attiva nell'area di notifica (tray) anche a finestra chiusa: per ria
 
 Messaggi che puoi vedere: *Password errata*, *Dispositivo non in linea*, *Richiesta rifiutata*, *Dispositivo occupato in un'altra sessione*, *Il dispositivo remoto non può condividere lo schermo* (permesso di cattura mancante).
 
-### Primo avvio su macOS (app non ancora notarizzata)
-L'app non è ancora firmata/notarizzata da Apple: al primo avvio macOS la blocca ("impossibile verificare che non contenga malware" / "danneggiata"). Non è un virus. Per aprirla: trascina **Yondesk** in *Applicazioni*, poi **clic destro sull'app → Apri → Apri** (solo la prima volta). Se compare ancora "danneggiata", nel *Terminale*: `xattr -dr com.apple.quarantine /Applications/Yondesk.app` e riavvia.
+### Primo avvio su macOS
+L'app è firmata e verificata da Apple (notarizzata): trascina **Yondesk** in *Applicazioni* e aprila con un doppio clic. macOS chiede solo conferma perché è scaricata da internet.
 
 ### Primo avvio su Windows (app non ancora firmata)
 L'app non è ancora firmata, quindi **SmartScreen** può mostrare un avviso blu ("Windows ha protetto il PC"). Non è un virus. Per aprirla: **Ulteriori informazioni → Esegui comunque**. Consiglio: usa la versione **Portable**, che gira senza installare nulla.
