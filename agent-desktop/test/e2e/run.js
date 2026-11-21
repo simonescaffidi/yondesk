@@ -283,15 +283,16 @@ async function main() {
       // finestra di prova sull'assistito con un campo di testo a fuoco
       await host.app.evaluate(async ({ BrowserWindow }) => {
         const w = new BrowserWindow({ width: 500, height: 200, x: 40, y: 120, title: 'e2e-input', alwaysOnTop: true });
-        await w.loadURL('data:text/html,<input id="t" autofocus style="width:90%;font-size:24px">');
+        // area di testo a tutta finestra: qualsiasi clic nella finestra la mette a fuoco; gli eventi ricevuti vengono annotati
+        await w.loadURL('data:text/html,' + encodeURIComponent('<body style="margin:0"><textarea id="t" autofocus style="width:100vw;height:100vh;font-size:24px;border:0"></textarea><script>window.ev=[];for(const n of ["mousedown","mouseup","keydown","focus","blur"])window.addEventListener(n,e=>ev.push(n+(e.key?":"+e.key:"")),true)</scr' + 'ipt></body>'));
         w.setAlwaysOnTop(true, 'screen-saver'); w.show(); w.moveTop(); w.focus(); w.webContents.focus();
         global.__e2eInput = w;
       });
       await sleep(800);
       const d = await display(host);
       const box = await viewer.locator('#v').boundingBox();
-      // clic dentro il campo (finestra a x=40,y=120 -> campo circa a 140,170 + bordi)
-      const tx = 240 / d.width, ty = 185 / d.height;
+      // clic al centro della finestra di prova (x=40..540, y=120..320)
+      const tx = 290 / d.width, ty = 230 / d.height;
       await viewer.mouse.click(box.x + box.width * tx, box.y + box.height * ty);
       await sleep(400);
       await viewer.keyboard.type('ciao123', { delay: 60 });
@@ -300,7 +301,7 @@ async function main() {
         .catch(async () => {
           const diag = await host.app.evaluate(async ({ BrowserWindow }) => {
             const w = global.__e2eInput; const f = BrowserWindow.getFocusedWindow();
-            return { testo: await w.webContents.executeJavaScript('document.getElementById("t").value'), finestraAFuoco: f ? f.getTitle() : null, campoAttivo: await w.webContents.executeJavaScript('document.activeElement && document.activeElement.id'), bounds: w.getBounds(), visibile: w.isVisible() };
+            return { testo: await w.webContents.executeJavaScript('document.getElementById("t").value'), finestraAFuoco: f ? f.getTitle() : null, campoAttivo: await w.webContents.executeJavaScript('document.activeElement && document.activeElement.id'), bounds: w.getBounds(), visibile: w.isVisible(), eventi: await w.webContents.executeJavaScript('window.ev.join(",")') };
           });
           throw new Error('testo non arrivato: ' + JSON.stringify(diag) + ' · cursore ' + JSON.stringify(await cursor(host)));
         });

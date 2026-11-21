@@ -38,9 +38,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, name: Linux, bin: 'dist/linux-unpacked/yondesk' }
-          - { os: windows-latest, name: Windows, bin: 'dist/win-unpacked/Yondesk.exe' }
-          - { os: macos-latest, name: macOS, bin: 'dist/mac-arm64/Yondesk.app/Contents/MacOS/Yondesk' }
+          - { os: ubuntu-latest, name: Linux }
+          - { os: windows-latest, name: Windows }
+          - { os: macos-latest, name: macOS }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -54,20 +54,49 @@ jobs:
       - name: Test unitari
         working-directory: agent-desktop
         run: npm test
-      - name: Pacchettizza l'app (come quella distribuita)
+      - name: Crea gli installer (gli stessi che vengono pubblicati)
         working-directory: agent-desktop
-        run: npm run pack
-      - name: Sessione reale tra due istanze dell'app
+        run: npm run dist
+      - name: Installa l'app come farebbe un utente
+        shell: bash
+        working-directory: agent-desktop
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update -q && sudo apt-get install -y -q ./dist/Yondesk.deb libfuse2t64 || sudo apt-get install -y -q ./dist/Yondesk.deb
+            ls -la /opt/Yondesk/yondesk
+            echo "YONDESK_APP_BIN=/opt/Yondesk/yondesk" >> "$GITHUB_ENV"
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            hdiutil attach dist/Yondesk-mac-arm64.dmg -nobrowse -mountpoint "$RUNNER_TEMP/dmg"
+            cp -R "$RUNNER_TEMP/dmg/Yondesk.app" "$RUNNER_TEMP/Yondesk.app"
+            hdiutil detach "$RUNNER_TEMP/dmg"
+            echo "YONDESK_APP_BIN=$RUNNER_TEMP/Yondesk.app/Contents/MacOS/Yondesk" >> "$GITHUB_ENV"
+          else
+            powershell -NoProfile -Command '$p = Start-Process -FilePath dist\Yondesk-Setup.exe -ArgumentList "/S" -Wait -PassThru; if ($p.ExitCode -ne 0) { throw "installer terminato con codice $($p.ExitCode)" }; $exe = Join-Path $env:ProgramFiles "Yondesk\Yondesk.exe"; if (!(Test-Path $exe)) { throw "Yondesk.exe non installato in $exe" }; $lnk = Join-Path $env:ProgramData "Microsoft\Windows\Start Menu\Programs\Yondesk.lnk"; if (!(Test-Path $lnk)) { throw "collegamento nel menu Start non creato" }; Write-Host "installato: $exe, collegamento: $lnk"'
+            echo "YONDESK_APP_BIN=$PROGRAMFILES/Yondesk/Yondesk.exe" >> "$GITHUB_ENV"
+          fi
+      - name: Sessione reale tra due istanze dell'app installata
         working-directory: agent-desktop
         shell: bash
-        env:
-          YONDESK_APP_BIN: ${{ github.workspace }}/agent-desktop/${{ matrix.bin }}
         run: |
-          ls -la "$(dirname "$YONDESK_APP_BIN")" | head -5
+          echo "app: $YONDESK_APP_BIN"
           if [ "$RUNNER_OS" = "Linux" ]; then
             xvfb-run -a -s "-screen 0 1280x800x24" node test/e2e/run.js
           else
             node test/e2e/run.js
+          fi
+      - name: Avvio delle versioni senza installazione (Portable Windows, AppImage Linux)
+        if: runner.os != 'macOS'
+        shell: bash
+        working-directory: agent-desktop
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            chmod +x dist/Yondesk.AppImage
+            (xvfb-run -a ./dist/Yondesk.AppImage --no-sandbox --user-data-dir="$RUNNER_TEMP/appimage-profile" > "$RUNNER_TEMP/appimage.log" 2>&1 &)
+            sleep 20
+            pgrep -af "/tmp/.mount_Yondes.*/yondesk" | head -3 || { echo "::error::l'AppImage non resta in esecuzione"; cat "$RUNNER_TEMP/appimage.log"; exit 1; }
+            pkill -f "/tmp/.mount_Yondes" || true
+          else
+            powershell -NoProfile -Command 'Start-Process -FilePath dist\Yondesk-portable.exe -ArgumentList "--user-data-dir=$env:RUNNER_TEMP\portable-profile"; Start-Sleep -Seconds 40; $p = Get-Process -Name Yondesk -ErrorAction SilentlyContinue | Where-Object { $_.Path -notlike "*Program Files*" }; if (!$p) { throw "la versione Portable non resta in esecuzione" }; Write-Host "Portable in esecuzione: $($p[0].Path)"; $p | Stop-Process -Force'
           fi
       - uses: actions/upload-artifact@v4
         if: always()
