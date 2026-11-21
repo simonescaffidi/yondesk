@@ -189,8 +189,8 @@ function renderHtml(file) {
 app.get('/', (req, res) => res.redirect(302, '/it/'));
 
 app.get(['/sitemap.xml'], (req, res) => {
-  const pages = ['', 'funzionalita.html', 'demo.html', 'download.html', 'prezzi.html', 'privacy-policy.html', 'cookie-policy.html'];
-  const en = { 'funzionalita.html': 'features.html', 'prezzi.html': 'pricing.html' };
+  const pages = ['', 'funzionalita.html', 'demo.html', 'download.html', 'prezzi.html', 'privacy-policy.html', 'cookie-policy.html', 'firma-del-codice.html'];
+  const en = { 'funzionalita.html': 'features.html', 'prezzi.html': 'pricing.html', 'firma-del-codice.html': 'code-signing-policy.html' };
   const urls = pages.flatMap(p => [`${SITE_URL}/it/${p}`, `${SITE_URL}/en/${en[p] || p}`]);
   res.type('application/xml').send(
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
