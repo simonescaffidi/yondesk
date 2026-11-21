@@ -63,7 +63,7 @@ Per collegarti ai tuoi PC/server senza che nessuno accetti:
 ### Farsi assistere dal telefono (Android)
 1. Scheda **"Fatti assistere"** → **Ricevi assistenza**: compaiono **ID** e **password** da comunicare all'operatore.
 2. Alla richiesta dell'operatore premi **Consenti**; Android chiede di autorizzare la condivisione: scegli **Tutto lo schermo** e avvia.
-3. Per tutta la sessione restano visibili la barra rossa nell'app e una **notifica** di sistema. Puoi usare le altre app: l'operatore vede lo schermo ma non può toccarlo. **Termina** chiude la condivisione.
+3. Per tutta la sessione restano visibili la barra rossa nell'app, una barra animata che conferma la condivisione in corso e una **notifica** di sistema. Puoi usare le altre app: l'operatore vede lo schermo ma non può toccarlo. **Termina** chiude la condivisione.
 
 Su iPhone e iPad l'app funziona come operatore; la condivisione dello schermo del telefono è disponibile su Android.
 

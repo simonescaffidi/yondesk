@@ -310,9 +310,15 @@ class _SessionPageState extends State<SessionPage> {
 
   Widget _hostBody() {
     if (_live) {
+      // L'indicatore animato non è solo estetica: Android invia un fotogramma solo quando lo schermo cambia,
+      // quindi con una schermata ferma l'operatore resterebbe senza immagine fino al primo tocco.
       return const Center(child: Padding(padding: EdgeInsets.all(24),
-        child: Text('L\'operatore vede lo schermo di questo telefono.\nPuoi usare le altre app: la condivisione continua finché non premi Termina.',
-            textAlign: TextAlign.center, style: TextStyle(color: Colors.white70))));
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SizedBox(width: 160, child: LinearProgressIndicator(key: Key('sharingPulse'), color: Color(0xFF22D3EE), backgroundColor: Colors.white12)),
+          SizedBox(height: 20),
+          Text('L\'operatore vede lo schermo di questo telefono.\nPuoi usare le altre app: la condivisione continua finché non premi Termina.',
+              textAlign: TextAlign.center, style: TextStyle(color: Colors.white70)),
+        ])));
     }
     return Padding(padding: const EdgeInsets.all(20), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
       const Text('Il tuo ID', style: TextStyle(color: Colors.white54)),
