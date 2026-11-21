@@ -1,7 +1,7 @@
 # Scheda App Store di Yondesk
 
 App `it.simonescaffidi.yondesk`, ID App Store Connect 6837761523, SKU `yondesk-ios`. Lingua primaria: italiano. Categoria: Utility (secondaria: Produttività). Gratuita.
-Screenshot in questa cartella: `iphone-*.png` (1290x2796, 6,7"), presi da una sessione reale dell'app.
+Screenshot in questa cartella: `iphone-*.png` (1290x2796, 6,7") e `ipad-*.png` (2048x2732, 13"), presi da una sessione reale dell'app.
 Su iPhone e iPad l'app è solo operatore: non condivide lo schermo del telefono.
 
 ## Italiano
@@ -74,8 +74,12 @@ PRIVACY
 ## Per la revisione di Apple
 
 - **Accesso**: nessun login.
-- **Note per il revisore**: To test the app you need a remote device. On any computer open https://yondesk.com/en/demo.html, choose "I'm being assisted": the page shows a 9-digit ID and a password. Enter them in the app (tab "Offri assistenza") and tap "Connetti", then accept the request in the browser and choose the screen to share. The app then shows the remote screen. The camera and microphone are never used: the usage descriptions are required by the WebRTC library.
+- **Note per il revisore**: To test the app you need a remote device. On any computer open https://yondesk.com/en/demo.html, stay on the "I need help" tab: the page shows a 9-digit ID and a password. Enter them in the app (tab "Offri assistenza") and tap "Connetti", then accept the request in the browser and choose the screen to share. The app then shows the remote screen. The camera and microphone are never used: the usage descriptions are required by the WebRTC library.
 - **Contatto**: Simone Scaffidi Domianello, info@simonescaffidi.it.
 - **Privacy dell'app**: nessun dato raccolto.
 - **Crittografia**: solo cifratura standard (esente), `ITSAppUsesNonExemptEncryption = false`.
 - **Classificazione per età**: 4+ (nessun contenuto sensibile).
+
+## Stato
+
+- 21/11/2026: build 1.1.1 (11) caricata dal workflow `iOS su TestFlight`, scheda compilata, versione inviata in revisione (stato `WAITING_FOR_REVIEW`). Disponibile in tutti i paesi tranne la Cina continentale, che richiede dichiarazioni aggiuntive. Rilascio automatico dopo l'approvazione.
