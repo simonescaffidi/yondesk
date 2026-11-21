@@ -79,3 +79,7 @@ PRIVACY
 - **Privacy dell'app**: nessun dato raccolto.
 - **Crittografia**: solo cifratura standard (esente), `ITSAppUsesNonExemptEncryption = false`.
 - **Classificazione per età**: 4+ (nessun contenuto sensibile).
+
+## Stato
+
+- 21/11/2026: build 1.1.1 (11) caricata dal workflow `iOS su TestFlight`, scheda compilata, versione inviata in revisione (stato `WAITING_FOR_REVIEW`). Disponibile in tutti i paesi tranne la Cina continentale, che richiede dichiarazioni aggiuntive. Rilascio automatico dopo l'approvazione.
