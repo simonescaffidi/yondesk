@@ -27,10 +27,14 @@ export E2E_DEVICE_KEY=e2e-device-key-0123456789abcdef E2E_HOST_PASS=e2emobile9
 ( cd ../agent-desktop && node test/e2e/mobile-peer.js viewer-web ) & PEER=$!
 for i in $(seq 1 120); do [ -f $OUT/peer.json ] && break; sleep 1; done
 python3 tool/tap_capture_dialog.py $DEV > $OUT/tap-dialog.log 2>&1 & TAPPER=$!
+# video della condivisione (serve a Google Play per la dichiarazione sul servizio in primo piano); se fallisce non blocca la prova
+adb -s $DEV shell screenrecord --time-limit 150 --size 540x1200 --bit-rate 2000000 /sdcard/condivisione.mp4 >/dev/null 2>&1 & REC=$!
 flutter test integration_test/app_test.dart -d $DEV \
   --dart-define=YONDESK_SERVER=$SERVER --dart-define=E2E_HOST=true \
   --dart-define=E2E_DEVICE_KEY=$E2E_DEVICE_KEY --dart-define=E2E_HOST_PASS=$E2E_HOST_PASS --dart-define=E2E_EXPECTED_ID=424242424
 A=$?; wait $PEER; R=$?; kill $TAPPER 2>/dev/null
+adb -s $DEV shell pkill -INT screenrecord >/dev/null 2>&1; sleep 3; kill $REC 2>/dev/null
+adb -s $DEV pull /sdcard/condivisione.mp4 $OUT/condivisione-android.mp4 >/dev/null 2>&1 || echo "video della condivisione non disponibile"
 cat $OUT/tap-dialog.log
 echo "assistito: app=$A dispositivo remoto=$R"; [ $A -eq 0 ] && [ $R -eq 0 ] || FAIL=1
 adb -s $DEV logcat -d -t 6000 2>/dev/null | grep -iE "yondesk|flutter|IsolateHolder|MediaProjection|AndroidRuntime|ForegroundService|FGS|SecurityException" | tail -400 > $OUT/logcat.txt || true
