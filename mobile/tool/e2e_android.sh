@@ -27,10 +27,17 @@ export E2E_DEVICE_KEY=e2e-device-key-0123456789abcdef E2E_HOST_PASS=e2emobile9
 ( cd ../agent-desktop && node test/e2e/mobile-peer.js viewer-web ) & PEER=$!
 for i in $(seq 1 120); do [ -f $OUT/peer.json ] && break; sleep 1; done
 python3 tool/tap_capture_dialog.py $DEV > $OUT/tap-dialog.log 2>&1 & TAPPER=$!
+# istantanee dello schermo durante la condivisione: diventano il video dimostrativo chiesto da Google Play
+# per il servizio in primo piano (screenrecord non va bene: disturba la cattura dello schermo dell'app)
+mkdir -p $OUT/rec; rm -f $OUT/rec/*.png
+( n=0; while true; do n=$((n+1)); adb -s $DEV exec-out screencap -p > $OUT/rec/$(printf %04d $n).png 2>/dev/null; sleep 1; done ) & REC=$!
 flutter test integration_test/app_test.dart -d $DEV \
   --dart-define=YONDESK_SERVER=$SERVER --dart-define=E2E_HOST=true \
   --dart-define=E2E_DEVICE_KEY=$E2E_DEVICE_KEY --dart-define=E2E_HOST_PASS=$E2E_HOST_PASS --dart-define=E2E_EXPECTED_ID=424242424
 A=$?; wait $PEER; R=$?; kill $TAPPER 2>/dev/null
+kill $REC 2>/dev/null
+find $OUT/rec -name '*.png' -size -2k -delete
+(command -v ffmpeg >/dev/null && ffmpeg -loglevel error -y -framerate 2 -pattern_type glob -i "$OUT/rec/*.png" -vf "scale=540:-2,format=yuv420p" -c:v libx264 $OUT/condivisione-android.mp4 && rm -rf $OUT/rec) || echo "video non creato: restano le istantanee in rec/"
 cat $OUT/tap-dialog.log
 echo "assistito: app=$A dispositivo remoto=$R"; [ $A -eq 0 ] && [ $R -eq 0 ] || FAIL=1
 adb -s $DEV logcat -d -t 6000 2>/dev/null | grep -iE "yondesk|flutter|IsolateHolder|MediaProjection|AndroidRuntime|ForegroundService|FGS|SecurityException" | tail -400 > $OUT/logcat.txt || true
