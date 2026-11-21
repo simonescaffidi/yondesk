@@ -2,13 +2,13 @@
 /*
  * Config electron-builder.
  * Firma Developer ID + notarizzazione Apple SOLO se i secret sono presenti in CI:
- * certificato (CSC_LINK, CSC_KEY_PASSWORD), team (APPLE_TEAM_ID) e chiave API App Store Connect
+ * certificato nel portachiavi preparato dal workflow (MAC_FIRMATA=1, CSC_NAME, CSC_KEYCHAIN), team (APPLE_TEAM_ID) e chiave API App Store Connect
  * (APPLE_API_KEY = percorso del file .p8, APPLE_API_KEY_ID, APPLE_API_ISSUER).
  * In quel caso l'app mac esce firmata e notarizzata (nessun avviso Gatekeeper).
  * Senza secret: build ad-hoc, apribile con clic destro -> Apri.
  */
 const signed = !!(
-  process.env.CSC_LINK &&
+  process.env.MAC_FIRMATA === '1' &&
   process.env.APPLE_TEAM_ID &&
   process.env.APPLE_API_KEY &&
   process.env.APPLE_API_KEY_ID &&
