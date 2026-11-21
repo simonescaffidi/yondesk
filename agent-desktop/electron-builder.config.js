@@ -16,8 +16,8 @@ const signed = !!(
 const macExtra = signed
   ? {
       hardenedRuntime: true,
-      entitlements: 'build/entitlements.mac.plist',
-      entitlementsInherit: 'build/entitlements.mac.plist',
+      entitlements: 'resources/entitlements.mac.plist',
+      entitlementsInherit: 'resources/entitlements.mac.plist',
       notarize: { teamId: process.env.APPLE_TEAM_ID }
     }
   : { hardenedRuntime: false };
@@ -27,12 +27,13 @@ module.exports = {
   productName: 'Yondesk',
   npmRebuild: false,
   publish: [{ provider: 'github', owner: 'simonescaffidi', repo: 'yondesk' }],
-  directories: { output: 'dist', buildResources: 'build' },
+  directories: { output: 'dist', buildResources: 'resources' },
+  icon: 'src/assets/icon.png', // 512x512: electron-builder genera .ico/.icns/icone Linux
   files: ['src/**/*', 'package.json'],
   asarUnpack: ['**/node_modules/@nut-tree-fork/**'],
   // Due formati Windows: 'portable' (gira senza installare, zero admin/collegamenti,
   // aggira l'errore del collegamento) e 'nsis' (installer classico, per-macchina).
-  win: { target: ['portable', 'nsis'], icon: 'build/icon.ico' },
+  win: { target: ['portable', 'nsis'] },
   portable: { artifactName: 'Yondesk-portable.${ext}' },
   nsis: {
     artifactName: 'Yondesk-Setup.${ext}',
@@ -50,7 +51,10 @@ module.exports = {
       target: [{ target: 'dmg', arch: ['x64', 'arm64'] }],
       artifactName: 'Yondesk-mac-${arch}.${ext}',
       category: 'public.app-category.utilities',
-      gatekeeperAssess: false
+      gatekeeperAssess: false,
+      extendInfo: {
+        NSScreenCaptureUsageDescription: 'Yondesk mostra il tuo schermo all\'operatore solo durante le sessioni di assistenza che accetti.'
+      }
     },
     macExtra
   ),
@@ -58,6 +62,8 @@ module.exports = {
     target: ['AppImage', 'deb'],
     artifactName: 'Yondesk.${ext}',
     category: 'Utility',
-    maintainer: 'www.simonescaffidi.it'
+    executableName: 'yondesk',
+    synopsis: 'Assistenza e controllo remoto',
+    maintainer: 'Simone Scaffidi <info@simonescaffidi.it>'
   }
 };

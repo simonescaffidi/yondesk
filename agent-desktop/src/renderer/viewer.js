@@ -6,10 +6,10 @@
  * SOLO se ha concesso il controllo (gating lato host). In sola visione vengono ignorati.
  */
 (function () {
-  const TA = window.TeleAssist;
+  const TA = window.Yondesk;
   const $ = (s) => document.querySelector(s);
   const v = $('#v');
-  let sig, ice, peer = null, ctrl = null, sessionId = '';
+  let sig, ice, peer = null, ctrl = null, sessionId = '', bound = false;
   const mods = { ctrl: false, alt: false, shift: false, meta: false };
 
   function setStatus(t) { $('#status').textContent = t; }
@@ -29,7 +29,7 @@
     F7: 'F7', F8: 'F8', F9: 'F9', F10: 'F10', F11: 'F11', F12: 'F12'
   };
 
-  function send(ev) { if (ctrl && ctrl.readyState === 'open') ctrl.send(JSON.stringify(ev)); }
+  function send(ev) { const ch = ctrl || (peer && peer.channels.ctrl); if (ch && ch.readyState === 'open') ch.send(JSON.stringify(ev)); }
 
   function rel(e) {
     const r = v.getBoundingClientRect();
@@ -80,7 +80,7 @@
     sig.on('open', () => { setStatus('Connessione al dispositivo…'); sig.send({ type: 'connect', target: String(target.id), password: target.pass, name: target.name || 'Operatore' }); });
     sig.on('pending', () => setStatus('In attesa di conferma sul dispositivo remoto…'));
     sig.on('accepted', (m) => { sessionId = m.sessionId; buildPeer(m.mode); });
-    sig.on('rejected', (m) => { setStatus(m.reason === 'auth' ? 'Password errata' : 'Richiesta rifiutata'); });
+    sig.on('rejected', (m) => { setStatus({ auth: 'Password errata', busy: 'Dispositivo occupato in un\'altra sessione', capture: 'Il dispositivo remoto non può condividere lo schermo' }[m.reason] || 'Richiesta rifiutata'); });
     sig.on('error', (m) => setStatus({ offline: 'Dispositivo non in linea', blocked: 'Troppi tentativi, riprova più tardi', self: 'ID non valido' }[m.code] || 'Errore di connessione'));
     sig.on('signal', (m) => { if (peer) peer.onSignal(m.data); });
     sig.on('hangup', () => end('Sessione terminata'));
@@ -89,15 +89,16 @@
 
   function buildPeer(mode) {
     peer = new TA.Peer(sig, sessionId, /*polite*/ false, ice);
-    ctrl = peer.createChannel('ctrl', { ordered: true });
+    peer.on('channel', (ch) => { if (ch.label === 'ctrl') ctrl = ch; }); // i canali li apre l'host
     peer.on('track', (stream) => { v.srcObject = stream; $('#ph').style.display = 'none'; v.play().catch(() => {}); v.focus(); });
     peer.on('closed', () => end('Sessione terminata'));
     setStatus(mode === 'control' ? 'Controllo attivo' : 'Sola visione');
-    bindInput();
+    if (!bound) { bound = true; bindInput(); }
   }
 
   function end(msg) {
     if (peer) { try { peer.close(); } catch {} peer = null; }
+    ctrl = null; sessionId = '';
     setStatus(msg || 'Chiuso');
     v.srcObject = null;
     $('#ph').style.display = 'block';

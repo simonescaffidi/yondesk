@@ -2,6 +2,10 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('agent', {
+  platform: process.platform,
+  permissions: () => ipcRenderer.invoke('permissions'),
+  openPermission: (kind) => ipcRenderer.invoke('open-permission', kind),
+  attention: () => ipcRenderer.send('attention'),
   listSources: () => ipcRenderer.invoke('list-sources'),
   getConfig: () => ipcRenderer.invoke('config-get'),
   setConfig: (patch) => ipcRenderer.invoke('config-set', patch),

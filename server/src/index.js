@@ -49,11 +49,14 @@ app.use((req, res, next) => {
 app.get('/api/ice', (req, res) => {
   const servers = [{ urls: (process.env.STUN_URLS || 'stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302,stun:stun2.l.google.com:19302,stun:stun.cloudflare.com:3478').split(',') }];
   if (process.env.TURN_URLS) {
-    servers.push({
-      urls: process.env.TURN_URLS.split(','),
-      username: process.env.TURN_USERNAME || '',
-      credential: process.env.TURN_CREDENTIAL || ''
-    });
+    let username = process.env.TURN_USERNAME || '';
+    let credential = process.env.TURN_CREDENTIAL || '';
+    if (process.env.TURN_SECRET) {
+      // credenziali temporanee (coturn "use-auth-secret"): scadono dopo 6 ore, nessuna password fissa nei client
+      username = `${Math.floor(Date.now() / 1000) + 6 * 3600}:yondesk`;
+      credential = require('crypto').createHmac('sha1', process.env.TURN_SECRET).update(username).digest('base64');
+    }
+    servers.push({ urls: process.env.TURN_URLS.split(','), username, credential });
   }
   res.json({ iceServers: servers });
 });
