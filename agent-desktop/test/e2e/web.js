@@ -28,6 +28,14 @@ const FAKE_DISPLAY = () => {
 async function page(browser, base) {
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 800 } });
   await ctx.addInitScript(FAKE_DISPLAY);
+  if (process.env.E2E_FORCE_RELAY) {
+    // prova del relay TURN: vieta i collegamenti diretti, la sessione deve passare dal relay
+    await ctx.addInitScript(() => {
+      const Native = window.RTCPeerConnection;
+      window.RTCPeerConnection = function (cfg) { return new Native({ ...(cfg || {}), iceTransportPolicy: 'relay' }); };
+      window.RTCPeerConnection.prototype = Native.prototype;
+    });
+  }
   await ctx.addInitScript(() => { try { localStorage.setItem('cookie_consent_v1', JSON.stringify({ necessary: true, statistics: false, ts: Date.now() })); } catch {} });
   const p = await ctx.newPage();
   const logs = [];
@@ -63,9 +71,9 @@ async function main() {
   const server = await T.startServer(port, fs.mkdtempSync(path.join(os.tmpdir(), 'yondesk-data-')));
   const browser = await chromium.launch({
     executablePath: process.env.E2E_CHROMIUM || undefined,
-    args: ['--disable-features=WebRtcHideLocalIpsWithMdns', '--autoplay-policy=no-user-gesture-required', '--no-sandbox']
+    args: ['--disable-features=WebRtcHideLocalIpsWithMdns', '--autoplay-policy=no-user-gesture-required', '--no-sandbox', ...(process.env.E2E_FORCE_RELAY ? ['--no-proxy-server'] : [])]
   });
-  console.log(`Client web · server ${base} · Chromium ${browser.version()}`);
+  console.log(`Client web · server ${base} · Chromium ${browser.version()}${process.env.E2E_FORCE_RELAY ? ' · SOLO RELAY TURN' : ''}`);
   let host, viewer, desk;
   try {
     let cred;
@@ -113,7 +121,7 @@ async function main() {
     });
 
     // ---- interoperabilità con l'app desktop ----
-    await check('avvio app desktop', async () => { desk = await T.launchApp('interop', base); });
+    if (!process.env.E2E_FORCE_RELAY) await check('avvio app desktop', async () => { desk = await T.launchApp('interop', base); });
     if (desk) {
       await check('operatore dal browser → assistito con app desktop: video', async () => {
         const id = await waitFor(async () => { const v = await T.hostId(desk); return /^\d{9}$/.test(v) ? v : null; }, 'ID app desktop');

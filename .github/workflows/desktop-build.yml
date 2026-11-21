@@ -1,20 +1,40 @@
 name: Build desktop agent
 
+# Pubblica gli installer desktop su GitHub Releases.
+# Parte da un tag v* o da un push sul branch ci-release (stesso commit di main).
+# Ogni installer viene pubblicato solo se: 1) i test "Test app" sono verdi per quel commit,
+# 2) l'app appena pacchettizzata supera la sessione reale tra due istanze su quel sistema operativo.
 on:
   push:
     tags: ['v*']
-    branches: ['ci-release']   # push su questo branch = cut release (aggira il blocco push-tag)
+    branches: ['ci-release']
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
+  test-verdi:
+    name: Test verdi per questo commit
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh api "repos/${{ github.repository }}/actions/workflows/test-apps.yml/runs?head_sha=${{ github.sha }}&status=success" -q '.total_count')
+          echo "Esecuzioni verdi di 'Test app' per ${{ github.sha }}: $n"
+          [ "$n" -ge 1 ] || { echo "::error::I test delle app non sono verdi per questo commit: pubblicazione bloccata"; exit 1; }
+
   build:
+    needs: test-verdi
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - { os: windows-latest, bin: 'dist/win-unpacked/Yondesk.exe' }
+          - { os: macos-latest, bin: 'dist/mac-arm64/Yondesk.app/Contents/MacOS/Yondesk' }
+          - { os: ubuntu-latest, bin: 'dist/linux-unpacked/yondesk' }
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -25,10 +45,10 @@ jobs:
         with:
           node-version: 20
       - name: Install
-        run: npm ci
-      - name: Rebuild native input module (control)
-        continue-on-error: true
-        run: npm run rebuild-native
+        shell: bash
+        run: |
+          npm ci
+          (cd ../server && npm ci)
       - name: Prepare macOS signing env (solo se i secret esistono)
         if: runner.os == 'macOS'
         env:
@@ -70,6 +90,16 @@ jobs:
         run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prova reale dell'app appena pacchettizzata
+        shell: bash
+        env:
+          YONDESK_APP_BIN: ${{ github.workspace }}/agent-desktop/${{ matrix.bin }}
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run -a -s "-screen 0 1280x800x24" node test/e2e/run.js
+          else
+            node test/e2e/run.js
+          fi
       - name: Compute tag from version
         id: ver
         shell: bash
